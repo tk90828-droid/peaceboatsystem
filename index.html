@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Cruise Reservation | 頂級遊輪商務系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #F5F7FA;
+            --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
+            --border: #CBD5E1; --sys-bg: #F8FAFC; --danger: #B91C1C; --success: #059669;
+            --primary: #0A192F; --primary-light: #1E293B; --accent: #0EA5E9;
+            --waitlist: #F59E0B; --special: #F97316;
+        }
+
+        * { box-sizing: border-box; border-radius: 0 !important; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-box { width: 360px; padding: 50px; background: white; border: 1px solid var(--primary); box-shadow: 15px 15px 0 rgba(0,0,0,0.1); text-align: center; }
+        .login-box h1 { font-weight: 700; font-size: 18px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--primary); }
+        
+        #main-app { display: none; padding: 30px 20px; }
+        .container { max-width: 1450px; margin: 0 auto; background: var(--white); padding: 40px 50px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; border-bottom: 2px solid var(--primary); padding-bottom: 20px; }
+        header h2 { font-weight: 700; font-size: 20px; margin: 0; letter-spacing: 0.1em; color: var(--primary); text-transform: uppercase; }
+        
+        .nav-tabs { display: flex; gap: 40px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+        .nav-tab { padding: 12px 0; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-light); border-bottom: 2px solid transparent; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.05em;}
+        .nav-tab:hover { color: var(--primary); }
+        .nav-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        .section-title { font-size: 12px; color: var(--primary); margin-bottom: 20px; font-weight: 700; border-left: 3px solid var(--primary); padding-left: 12px; text-transform: uppercase; letter-spacing: 0.1em;}
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 15px; }
+        
+        .input-group { display: flex; flex-direction: column; position: relative;}
+        .input-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
+        .input-wrapper input, .input-wrapper select { width: 100%; padding-right: 25px;}
+        .clear-btn { position: absolute; right: 8px; cursor: pointer; color: var(--text-light); font-size: 18px; line-height: 1; padding: 2px; }
+        .clear-btn:hover { color: var(--danger); }
+
+        label { font-size: 11px; color: var(--text-light); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;}
+        input, select { padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; transition: 0.2s; background: #FFF; color: var(--text-main); height: 38px;}
+        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+        input[readonly], select:disabled { background-color: var(--sys-bg); border-style: solid; color: var(--text-light); cursor: not-allowed; }
+
+        #step-2-container { display: none; opacity: 0; transition: opacity 0.4s ease; margin-top: 40px; border-top: 1px dashed var(--border); padding-top: 30px;}
+
+        .passenger-block { border: 1px solid var(--border); padding: 30px; margin-bottom: 25px; background: var(--white); }
+        .passenger-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 15px;}
+        .passenger-header h3 { font-weight: 700; font-size: 15px; margin: 0; color: var(--primary); }
+        
+        .room-sync-box { background: var(--sys-bg); padding: 12px 15px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: flex-end; gap: 20px; }
+        
+        .cost-calc-area { background: #FFFFFF; border: 1px solid var(--border); border-top: 3px solid var(--accent); padding: 25px; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02);}
+        .cost-calc-grid { background: #F0F9FF; padding: 15px; border: 1px solid #E0F2FE; }
+        .calc-set { background: #FFF !important; color: var(--accent) !important; border: 2px solid var(--accent) !important; font-weight: 800; font-size: 16px; height: 42px;}
+
+        .advanced-fields { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .toggle-btn { font-size: 11px; color: var(--text-light); font-weight: 600; cursor: pointer; margin: 10px 0; display: inline-block; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.05em;}
+        .toggle-btn:hover { color: var(--primary); text-decoration: underline; }
+
+        button { font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; display: inline-flex; align-items: center; justify-content: center; letter-spacing: 0.1em; text-transform: uppercase;}
+        .btn-login { background: var(--primary); color: white; height: 38px; padding: 0 20px; }
+        .btn-login:hover { background: var(--primary-light); }
+        .btn-submit { background: var(--primary); color: white; width: 100%; height: 50px; font-size: 15px; margin-top: 15px; }
+        .btn-submit:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--border);}
+        .btn-add { background: var(--white); border: 1px solid var(--text-light); color: var(--text-main); width: 100%; margin-bottom: 20px; height: 45px;}
+        .btn-add:hover { background: var(--primary); color: var(--white); border-color: var(--primary);}
+        .btn-remove { background: transparent; color: var(--danger); font-size: 12px; padding: 0; height: auto; font-weight: 600; text-decoration: underline; }
+        .btn-update { background: var(--white); border: 1px solid var(--success); font-size: 11px; color: var(--success); height: 26px; padding: 0 10px;}
+        .btn-batch { background: var(--primary); font-size: 11px; color: #FFF; height: 28px; padding: 0 10px;}
+        
+        .search-bar { display: flex; gap: 15px; margin-bottom: 20px; background: var(--sys-bg); padding: 15px 20px; border: 1px solid var(--border); align-items: flex-end; flex-wrap:wrap;}
+
+        /* 表格區 */
+        .table-wrapper { width: 100%; max-height: 65vh; overflow: auto; border: 1px solid var(--border); background: var(--white); }
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; table-layout: fixed;}
+        th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); border-right: 1px dashed var(--border); text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background-color: inherit; vertical-align:middle;}
+        
+        thead th { position: sticky; top: 0; background: var(--sys-bg); font-weight: 700; color: var(--text-main); text-transform: uppercase; font-size: 11px; z-index: 20; border-bottom: 2px solid var(--border);}
+        tbody tr { transition: filter 0.2s; }
+        tbody tr:hover { filter: brightness(0.96); }
+
+        .sticky-1 { position: sticky; left: 0; width: 45px; z-index: 10; font-weight: bold; text-align: center;}
+        .sticky-2 { position: sticky; left: 45px; width: 95px; z-index: 10; font-weight: 700; color: var(--primary);}
+        .sticky-3 { position: sticky; left: 140px; width: 100px; z-index: 10; border-right: 2px solid var(--border) !important;}
+        thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: #E2E8F0; }
+
+        .td-input { width: 100%; height: 28px; padding: 0 4px; font-size: 12px; border: 1px solid transparent; background: transparent; }
+        .td-input:focus { border: 1px solid var(--accent); background: #FFF; box-shadow: none; }
+        .td-readonly { background: transparent; border: none; font-weight: bold; pointer-events: none; color: var(--primary);}
+        
+        .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50% !important; margin-right: 4px; vertical-align: middle; }
+        .dot-normal { background-color: var(--success); } .dot-cancel { background-color: var(--danger); } .dot-waitlist { background-color: var(--waitlist); }
+        
+        .tag { font-size: 10px; padding: 2px 5px; color: var(--white); cursor: help; border-radius: 2px !important; margin-left: 5px; position: relative; vertical-align: middle;}
+        .tag-group { background: var(--primary); } .tag-room { background: var(--accent); } .tag-special { background: var(--special); }
+
+        #global-tooltip { display: none; position: fixed; background: #000; color: #fff; padding: 12px; border-radius: 4px !important; font-size: 12px; z-index: 99999; pointer-events: none; white-space: normal; line-height: 1.6; box-shadow: 3px 3px 10px rgba(0,0,0,0.3); min-width: 150px; max-width: 300px; word-break: break-all;}
+
+        tr.group-border-left > td:first-child { border-left: 4px solid var(--grp-color) !important; }
+        tr.group-border-top > td { border-top: 2px solid var(--grp-color) !important; }
+        tr.group-border-bottom > td { border-bottom: 2px solid var(--grp-color) !important; }
+
+        .room-bg-1 { background-color: #E8F4FD !important; }
+        .room-bg-2 { background-color: #FFF8E7 !important; }
+        .normal-bg { background-color: var(--white) !important; }
+        
+        /* Logs 完美對齊與截斷設計 */
+        #page-logs table { table-layout: fixed; width: 100%;}
+        #page-logs table th, #page-logs table td { padding: 12px; border-right: none;}
+        .log-time { width: 170px; color: var(--text-light); font-size: 12px; }
+        .log-op { width: 90px; font-weight: 700; }
+        .log-target { width: 180px; font-weight: 700; color: var(--accent); font-size: 12px;}
+        .log-action { width: 100px; font-weight: 700; color: var(--primary); }
+        .log-row-container { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 15px;}
+        .log-summary { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-light); font-size: 12px;}
+        .log-detail-link { flex: none; cursor: pointer; color: var(--accent); text-decoration: underline; font-weight: 700; font-size: 12px; text-align: right;}
+        .log-detail-link:hover { color: var(--primary); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s ease; }
+        .modal-overlay.show { opacity: 1; display: flex; }
+        #manager-modal { z-index: 3000; } 
+        #cancel-modal { z-index: 4000; }
+        #log-detail-modal { z-index: 5000; } 
+        #custom-modal, #input-modal, #col-toggle-modal { z-index: 10500 !important; } 
+
+        .modal-box { background: var(--white); border: 1px solid var(--primary); padding: 35px 30px; width: 360px; box-shadow: 15px 15px 0 rgba(0,0,0,0.1); text-align: center; transform: translateY(10px); transition: all 0.2s ease-out; }
+        .modal-overlay.show .modal-box { transform: translateY(0); }
+        .modal-title { font-size: 15px; font-weight: 700; color: var(--primary) !important; margin-bottom: 15px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .modal-msg { font-size: 13px; color: var(--text-light) !important; margin-bottom: 35px; line-height: 1.8; letter-spacing: 0.05em;}
+        .modal-actions { display: flex; justify-content: center; gap: 15px; }
+        .modal-btn { flex: 1; height: 38px; font-size: 13px; border: 1px solid transparent;}
+        .modal-btn-cancel { background: transparent; color: var(--text-light); border-color: var(--border); }
+        .modal-btn-cancel:hover { background: var(--sys-bg); color: var(--primary);}
+        .modal-btn-confirm { background: var(--primary); color: white; font-weight: 700;}
+
+        .detail-modal-box { width: 550px; text-align: left; background: var(--white); border: 1px solid var(--primary); box-shadow: 15px 15px 0 rgba(0,0,0,0.1); padding: 30px; transform: translateY(10px); transition: all 0.2s ease-out; }
+        .modal-overlay.show .detail-modal-box { transform: translateY(0); }
+        .detail-pre { background: var(--sys-bg); padding: 15px; border: 1px solid var(--border); font-size: 12px; color: var(--text-main); max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; line-height: 1.6;}
+
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top: 3px solid var(--accent); animation: spin 0.8s linear infinite; margin-bottom: 15px; border-radius: 50% !important; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .manager-member-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); padding: 8px; margin-bottom: 15px; background: var(--sys-bg); text-align: left;}
+        .manager-member-label { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; padding: 6px; font-size: 13px; cursor: pointer; font-weight: normal; color: var(--text-main); border-bottom: 1px solid #E2E8F0; background: var(--white);}
+        .manager-member-label:hover { background: #F0F9FF; }
+        .crown-icon { display: none; margin-left: auto; font-size: 16px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: 0.2s;}
+        .crown-icon.is-leader { display: inline-block; filter: grayscale(0); opacity: 1; transform: scale(1.2); }
+        .current-tag-text { font-size: 10px; color: var(--text-light); margin-left: 8px; }
+
+        /* 隱藏細項的寬度與密集度 */
+        #col-toggle-list label { padding: 4px 6px; font-size: 12px; border-bottom: none; border-radius: 4px !important; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
+        #col-toggle-list label:hover { background: #F1F5F9; }
+    </style>
+</head>
+<body>
+
+<div id="global-tooltip"></div>
+
+<div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div><div id="loading-text" style="color: var(--primary); font-weight: 700; letter-spacing: 0.1em; font-size: 12px;">PROCESSING...</div>
+</div>
+
+<div id="col-toggle-modal" class="modal-overlay">
+    <div class="modal-box" style="width: 850px; max-width:95vw; text-align: left;">
+        <div class="modal-title">隱藏表頭設定</div>
+        <div class="modal-msg" style="margin-bottom:15px;">請勾選欲「隱藏」的欄位：</div>
+        <div id="col-toggle-list" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px; max-height:350px; overflow-y:auto; margin-bottom:20px; border:1px solid var(--border); padding:15px; background:var(--white);"></div>
+        <div class="modal-actions" style="margin-top: 10px;">
+            <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="resetColToggle()">清空篩選</button>
+            <button class="modal-btn modal-btn-confirm" onclick="applyColToggle()">確認設定</button>
+        </div>
+    </div>
+</div>
+
+<div id="input-modal" class="modal-overlay">
+    <div class="modal-box" style="width: 340px;">
+        <div id="input-modal-title" class="modal-title">輸入資料</div>
+        <div id="input-modal-msg" class="modal-msg" style="margin-bottom: 15px; text-align:left;">請輸入數值：</div>
+        <div class="input-group" style="margin-bottom: 25px;">
+            <input type="text" id="input-modal-value" style="text-align: center; font-size: 16px; font-weight: bold;" onkeydown="if(event.key === 'Enter') closeInputModal(true)">
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" onclick="closeInputModal(false)" style="display:block;">取消</button>
+            <button class="modal-btn modal-btn-confirm" onclick="closeInputModal(true)">確認</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div id="modal-title" class="modal-title">TITLE</div>
+        <div id="modal-msg" class="modal-msg">CONTENT</div>
+        <div class="modal-actions">
+            <button id="modal-btn-cancel" class="modal-btn modal-btn-cancel" onclick="closeModal(false)" style="display:none;">CANCEL</button>
+            <button id="modal-btn-confirm" class="modal-btn modal-btn-confirm" onclick="closeModal(true)">確定</button>
+        </div>
+    </div>
+</div>
+
+<div id="cancel-modal" class="modal-overlay">
+    <div class="modal-box" style="width: 380px;">
+        <div class="modal-title" style="border-bottom: 2px solid var(--danger); color: var(--danger) !important;">取消訂單設定</div>
+        <div class="input-group" style="text-align:left;">
+            <label>取消理由 (必填)</label>
+            <select id="cancel-reason">
+                <option value="">-- 請選擇 --</option>
+                <option value="本人身體狀況">本人身體狀況</option><option value="心境變化">心境變化</option>
+                <option value="航線／行程變更">航線／行程變更</option><option value="時間無法配合">時間無法配合</option>
+                <option value="我方判斷">我方判斷</option><option value="家庭因素">家庭因素</option>
+                <option value="經濟因素">經濟因素</option><option value="同行者因素">同行者因素</option>
+                <option value="情緒不安">情緒不安</option><option value="經營不安">經營不安</option>
+                <option value="對應不滿">對應不滿</option><option value="選購項目不滿">選購項目不滿</option>
+            </select>
+        </div>
+        <div class="input-group" style="text-align:left;">
+            <label>取消結果 (必填)</label>
+            <select id="cancel-result" onchange="document.getElementById('cancel-amt-box').style.display = (this.value==='名義變更'?'flex':'none')">
+                <option value="">-- 請選擇 --</option>
+                <option value="不移行">不移行</option><option value="往後移團">往後移團</option>
+                <option value="往前移團">往前移團</option><option value="名義變更">名義變更</option>
+            </select>
+        </div>
+        <div class="input-group" id="cancel-amt-box" style="display:none; text-align:left;">
+            <label>名義變更金額 (手填)</label>
+            <input type="number" id="cancel-amount" placeholder="請輸入變更金額">
+        </div>
+        <div class="modal-actions" style="margin-top:25px;">
+            <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="closeCancelModal()">返回</button>
+            <button class="modal-btn modal-btn-confirm" style="background:var(--danger);" onclick="confirmCancelOrder()">確認取消</button>
+        </div>
+    </div>
+</div>
+
+<div id="log-detail-modal" class="modal-overlay">
+    <div class="detail-modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div class="modal-title" style="margin:0;">異動明細紀錄</div>
+            <button class="btn-update" onclick="copyLogDetails()">複製內容</button>
+        </div>
+        <pre id="log-detail-content" class="detail-pre"></pre>
+        <div class="modal-actions" style="margin-top:20px;">
+            <button class="modal-btn modal-btn-cancel" style="display:block; width:100%;" onclick="document.getElementById('log-detail-modal').classList.remove('show')">關閉視窗</button>
+        </div>
+    </div>
+</div>
+
+<div id="manager-modal" class="modal-overlay">
+    <div class="modal-box" style="width: 900px; max-width:95vw;">
+        <div id="manager-title" class="modal-title" style="border-bottom: 2px solid var(--accent); padding-bottom: 10px;">管理視窗</div>
+        
+        <div style="display:flex; gap:20px; height:50vh; min-height:400px; text-align:left; margin-bottom:15px;">
+            <div style="flex:1; display:flex; flex-direction:column; border-right:1px dashed var(--border); padding-right:20px;">
+                <div id="manager-section-1-title" class="section-title" style="margin-bottom:10px; font-size:13px; color:var(--primary);">1. 既有群組或新增群組</div>
+                <select id="manager-select-existing" onchange="loadManagerTag(this.value)" style="margin-bottom:10px;"></select>
+                <div style="display:flex; gap:5px; margin-bottom:15px; align-items:center;">
+                    <span id="manager-input-label" style="font-size:12px; font-weight:600; color:var(--text-main); white-space:nowrap;">群組名稱</span>
+                    <div class="input-wrapper" style="flex:1;">
+                        <input type="text" id="manager-tag-id" placeholder="代號名稱 (可修改)" style="width:100%; padding-right:25px;">
+                        <span class="clear-btn" onclick="clearInput('manager-tag-id')">&times;</span>
+                    </div>
+                    <button type="button" class="btn-login" style="padding:0 10px; width:80px; height:38px;" onclick="document.getElementById('manager-tag-id').value = generateTagIdStr();">自動產生</button>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:5px;">
+                    <div class="section-title" style="margin-bottom:0; font-size:13px; color:var(--success); border-left-color:var(--success);">2. 已選成員名單</div>
+                    <button type="button" class="btn-remove" onclick="deleteCurrentGroup()" style="font-size:11px;">[徹底刪除此代號]</button>
+                </div>
+                <div id="selected-chips-container" style="flex:1; background:var(--sys-bg); border:1px solid var(--border); border-radius:4px; overflow-y:auto; padding:10px;">
+                </div>
+            </div>
+            
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <div class="section-title" style="margin-bottom:10px; font-size:13px; color:var(--accent); border-left-color:var(--accent);">3. 點選加入名單</div>
+                <div class="input-wrapper" style="margin-bottom:10px;">
+                    <input type="text" id="manager-search-input" placeholder="🔍 輸入姓名或 ID 篩選..." oninput="renderManagerRightList()">
+                    <span class="clear-btn" onclick="clearInput('manager-search-input'); renderManagerRightList();" style="top:50%; transform:translateY(-50%);">&times;</span>
+                </div>
+                <div id="manager-available-list" style="flex:1; background:var(--white); border:1px solid var(--border); border-radius:4px; overflow-y:auto;">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:20px;">
+            <button class="modal-btn modal-btn-cancel" onclick="closeManagerModal()" style="display:block;">取消變更</button>
+            <button class="modal-btn modal-btn-confirm" onclick="submitManagerModal()"> 送出更新</button>
+        </div>
+    </div>
+</div>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h1>PEACE BOAT</h1>
+        <div class="input-group" style="text-align: left; margin-bottom: 15px;">
+            <label>Operator Email</label>
+            <input type="email" id="login-email" placeholder="請輸入 Email 帳號" onkeydown="if(event.key === 'Enter') document.getElementById('login-pwd').focus()">
+        </div>
+        <div class="input-group" style="text-align: left; margin-bottom: 25px;">
+            <label>Password</label>
+            <input type="password" id="login-pwd" placeholder="請輸入密碼" onkeydown="if(event.key === 'Enter') executeFirebaseLogin()">
+        </div>
+        <button class="btn-login" id="btn-signin" onclick="executeFirebaseLogin()">SIGN IN</button>
+    </div>
+</div>
+<div id="main-app">
+    <div class="container">
+        <header>
+            <h2>Reservation System</h2>
+            <div class="user-info" style="font-size:11px; font-weight:600;">
+                OP: <span id="current-username" style="color:var(--primary);">Admin</span> | <span id="system-status" style="color: var(--text-light);">(INIT...)</span> | 
+                <a href="#" onclick="executeFirebaseLogout()" style="color:var(--text-light); margin-left:15px; text-decoration:none;">[ LOGOUT ]</a>
+            </div>
+        </header>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('page-add')">建立新訂單 / NEW ORDER</div>
+            <div class="nav-tab" onclick="switchTab('page-list')">航程清單瀏覽及管理 / VOYAGE LIST</div>
+            <div class="nav-tab" onclick="switchTab('page-logs')">歷史紀錄 / SYSTEM LOGS</div>
+        </div>
+
+        <div id="page-add" class="page-section active">
+            <form id="orderForm" onkeydown="if(event.key === 'Enter') { event.preventDefault(); return false; }">
+                <div class="section-title">▍ 航程選擇 (Voyage Selection)</div>
+                <div style="background:var(--white); padding:25px; border:1px solid var(--border); width:300px;">
+                    <div class="input-group">
+                        <label>航程代碼 (請選擇或輸入)</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="global-groupCode" list="groupOptions" placeholder="手動輸入或選擇" required onchange="handleGroupChange()" oninput="handleGroupInput()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); handleGroupChange(); }" style="padding-right:28px;">
+                            <span class="clear-btn" onclick="clearInput('global-groupCode')">&times;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-2-container">
+                    <div class="section-title">▍ 旅客資料與分房設定 (Passenger & Rooming)</div>
+                    <div id="passengers-wrapper"></div>
+                    <button type="button" class="btn-add" onclick="addPassenger()">+ 新增同行旅客 (最多新增 4 人)</button>
+                    <button type="button" class="btn-submit" onclick="submitOrder()">確認新增</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="page-list" class="page-section">
+            <div class="section-title">▍ 航程名單瀏覽與管理</div>
+            <div class="search-bar">
+                <div class="input-group" style="width:140px;">
+                    <label>航程代碼</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="search-groupCode" list="groupOptions" placeholder="輸入代碼" onkeydown="if(event.key === 'Enter') searchList()">
+                        <span class="clear-btn" onclick="clearInput('search-groupCode')">&times;</span>
+                    </div>
+                </div>
+                <div class="input-group" style="width:140px;">
+                    <label>旅客姓名/ID (選填)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="search-name" placeholder="可選填" onkeydown="if(event.key === 'Enter') searchList()">
+                        <span class="clear-btn" onclick="clearInput('search-name')">&times;</span>
+                    </div>
+                </div>
+                <div class="input-group" style="width: 130px;">
+                    <label>狀態篩選</label>
+                    <select id="status-filter" onchange="renderList()">
+                        <option value="全部">○ 顯示全部</option>
+                        <option value="正常">● 報名成功</option>
+                        <option value="候補">● 候補名單</option>
+                        <option value="群組">● 群組</option>
+                        <option value="同房">● 同房</option>
+                        <option value="孩童">● 孩童</option>
+                        <option value="已取消">● 已取消</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-login" style="width: 90px;" onclick="searchList()">SEARCH</button>
+                
+                <div style="margin-left: auto; display:flex; gap:10px;">
+                    <button type="button" class="btn-login" style="background:var(--accent);" onclick="openManagerModal('群組備註')">群組管理</button>
+                    <button type="button" class="btn-login" style="background:var(--primary-light);" onclick="openManagerModal('同房註記')">同房管理</button>
+                    <button type="button" style="background:var(--white); border:1px solid var(--primary); color:var(--primary); height:38px;" onclick="openColToggleModal()">顯示/隱藏 細項費用</button>
+                    <button type="button" style="background:var(--white); border:1px solid var(--success); color:var(--success); height:38px; padding:0 15px;" onclick="exportExcel()">匯出 EXCEL</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead id="list-head"></thead>
+                    <tbody id="list-body">
+                        <tr><td colspan="45" style="text-align:center; color:var(--text-light); padding: 50px;">請先於上方搜尋航程以載入名單</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="page-logs" class="page-section">
+            <div class="section-title">▍ 系統操作紀錄 (System Logs)</div>
+            <div class="search-bar" style="justify-content: space-between; align-items: center; padding: 15px 20px;">
+                <span style="font-size: 11px; color: var(--text-light); font-weight:600; text-transform:uppercase;">顯示最新操作歷史，方便稽核追蹤。</span>
+                <button type="button" class="btn-login" style="width: 90px; height: 32px; background:var(--white); color:var(--primary); border:1px solid var(--primary);" onclick="loadLogs(true)">↻ 更新</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="log-time">時間</th>
+                        <th class="log-op">操作人</th>
+                        <th class="log-target">影響對象 (NO/ID/代號)</th>
+                        <th class="log-action">動作類型</th>
+                        <th>詳細內容</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-body"><tr><td colspan="5" style="text-align:center; color:var(--text-light); padding: 50px;">紀錄載入中...</td></tr></tbody>
+            </table>
+        </div>
+        
+        <datalist id="groupOptions"></datalist>
+        <datalist id="existing-list-name"></datalist>
+        <datalist id="existing-list-id"></datalist>
+    </div>
+</div>
+
+<script>
+    function getCurrentYYYYMM() {
+        const now = new Date();
+        return now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0');
+    }
+   
+    function fmtDate(val) {
+        if (!val) return "";
+        let str = String(val);
+        if (str.includes("T")) {
+            let parts = str.split("T");
+            if(parts[0].match(/^\d{4}-\d{2}-\d{2}$/)) return parts[0].replace(/-/g, '/');
+        }
+        let parsed = new Date(str);
+        if (!isNaN(parsed) && str.includes("GMT")) {
+            let m = String(parsed.getMonth()+1).padStart(2, '0');
+            let d = String(parsed.getDate()).padStart(2, '0');
+            return `${parsed.getFullYear()}/${m}/${d}`;
+        }
+        return str.replace(/-/g, '/');
+    }
+
+    function formatDateInput(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 8) v = v.slice(0, 8);
+        if (v.length >= 7) {
+            input.value = v.slice(0,4) + '/' + v.slice(4,6) + '/' + v.slice(6);
+        } else if (v.length >= 5) {
+            input.value = v.slice(0,4) + '/' + v.slice(4);
+        } else {
+            input.value = v;
+        }
+    }
+
+    const gasURL = "https://script.google.com/macros/s/AKfycbwXVsk6P7i3KcYsgXNtJ-e8EHb546aprMrLeWtm2gvr0ew0vZUvtTtUB38RXeMmIZPYpw/exec";
+    let passengerCount = 0; let blockCounter = 0;
+    let priceDict = {}; let existingPassengers = []; 
+    window.currentGroupData = []; window.currentGroupHeaders = []; let cachedLogs = null;
+    let isLogsDirty = true; 
+    let managerType = ""; let currentManagerOldTag = ""; let managerLeaderNo = null; let cancelTargetNo = null;
+    let tempSelectedNos = new Set(); let hiddenCols = []; window.globalLogCache = [];
+    window.voyageDefaults = {};
+
+    function clearInput(id) {
+        const el = document.getElementById(id);
+        el.value = ''; el.focus();
+        if(id === 'global-groupCode') { document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); handleGroupInput(); }
+    }
+
+    let modalCallback = null;
+    function showCustomModal(options) {
+        document.getElementById('modal-title').innerText = options.title || 'INFORMATION';
+        document.getElementById('modal-msg').innerHTML = options.msg.replace(/\n/g, '<br>');
+        const btnCancel = document.getElementById('modal-btn-cancel'); const btnConfirm = document.getElementById('modal-btn-confirm');
+        if (options.type === 'confirm') { btnCancel.style.display = 'block'; btnConfirm.innerText = 'CONFIRM'; } 
+        else { btnCancel.style.display = 'none'; btnConfirm.innerText = '確定'; }
+        modalCallback = options.callback || null; document.getElementById('custom-modal').classList.add('show');
+    }
+    function closeModal(isConfirm) { document.getElementById('custom-modal').classList.remove('show'); if (modalCallback && isConfirm) setTimeout(modalCallback, 200); modalCallback = null; }
+    function customAlert(msg, type = 'info') { let title = 'INFORMATION';
+        if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR';
+        if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg });
+    }
+    function customConfirm(msg, onConfirm, isDanger = false) { showCustomModal({ type: 'confirm', title: isDanger ? 'DANGEROUS ACTION' : 'PLEASE CONFIRM', msg: msg, callback: onConfirm }); }
+    
+    function customPrompt(title, msg, isPassword) {
+        return new Promise((resolve) => {
+            document.getElementById('input-modal-title').innerText = title;
+            document.getElementById('input-modal-msg').innerHTML = msg;
+            let inputEl = document.getElementById('input-modal-value');
+            inputEl.type = isPassword ? 'password' : 'text'; inputEl.value = ''; 
+            window._inputModalResolve = resolve;
+            document.getElementById('input-modal').classList.add('show');
+            setTimeout(() => inputEl.focus(), 100);
+        });
+    }
+    function closeInputModal(isConfirm) {
+        let val = document.getElementById('input-modal-value').value;
+        document.getElementById('input-modal').classList.remove('show');
+        if (window._inputModalResolve) {
+            let resolveFn = window._inputModalResolve;
+            window._inputModalResolve = null;
+            setTimeout(() => resolveFn(isConfirm ? val : null), 300);
+        }
+    }
+
+    function showLoading(text = 'PROCESSING...') { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
+    function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+    function showTagTooltip(e, contentHTML) { let tt = document.getElementById('global-tooltip'); tt.innerHTML = contentHTML; tt.style.display = 'block'; tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; }
+    function hideTagTooltip() { document.getElementById('global-tooltip').style.display = 'none'; }
+    function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip');
+        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
+
+    function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
+    function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
+
+    const roomOptionsHTML = `
+        <option value="">-- 請選擇房型 --</option>
+        <option value="Pair Owner's Suite-A1-主人套房">Pair Owner's Suite-A1-(雙人)主人套房</option>
+        <option value="Pair Penthouse Suite-A2-閣樓套房">Pair Penthouse Suite-A2-(雙人)閣樓套房</option>
+        <option value="Pair Premium Suite-A3-尊爵套房">Pair Premium Suite-A3-(雙人)尊爵套房</option>
+        <option value="Pair Suite-A4-豪華套房">Pair Suite-A4-(雙人)豪華套房</option>
+        <option value="Pair Junior Suite-B-迷你套房">Pair Junior Suite-B-(雙人)迷你套房</option>
+        <option value="Pair Balcony Ⅰ-C1-陽台房I">Pair Balcony Ⅰ-C1-(雙人)陽台房I</option>
+        <option value="Pair Balcony Ⅱ-C2-陽台房II">Pair Balcony Ⅱ-C2-(雙人)陽台房II</option>
+        <option value="Pair Outside wide-D1-海景寬敞房">Pair Outside wide-D1-(雙人)海景寬敞房</option>
+        <option value="Pair Outside view-D2-海景景緻房">Pair Outside view-D2-(雙人)海景景緻房</option>
+        <option value="Pair OutsideⅠ-E-海景房I">Pair OutsideⅠ-E-(雙人)海景房I</option>
+        <option value="Pair OutsideⅡ-F-海景房II">Pair OutsideⅡ-F-(雙人)海景房II</option>
+        <option value="Pair Inside-G-內艙房">Pair Inside-G-(雙人)內艙房</option>
+        <option value="Single Balcony Ⅰ-I-陽台房I">Single Balcony Ⅰ-I-(單人)陽台房I</option>
+        <option value="Single Balcony Ⅱ-J-陽台房II">Single Balcony Ⅱ-J-(單人)陽台房II</option>
+        <option value="Single Outside Ⅰ-K-海景房I">Single Outside Ⅰ-K-(單人)海景房I</option>
+        <option value="Single Outside Ⅱ-L-海景房II">Single Outside Ⅱ-L-(單人)海景房II</option>
+        <option value="Single Inside-M-內艙房">Single Inside-M-(單人)內艙房</option>
+        <option value="Semi Single Outside Ⅰ-E2-海景房I">Semi Single Outside Ⅰ-E2-(半單)海景房I</option>
+        <option value="Semi Single Outside Ⅱ-F2-海景房II">Semi Single Outside Ⅱ-F2-(半單)海景房II</option>
+        <option value="Semi Single Inside-G2-內艙房">Semi Single Inside-G2-(半單)內艙房</option>
+        <option value="Friendly Outside Ⅱ-F4-海景房II">Friendly Outside Ⅱ-F4-(友好)海景房II</option>
+        <option value="Friendly Inside-G3-內艙房">Friendly Inside-G3-(友好)內艙房</option>
+        <option value="Friendly inside young-Y-內艙房">Friendly inside young-Y-(友好)內艙房</option>
+    `;
+
+    window.onload = function() {
+        const statusEl = document.getElementById('system-status');
+        const t = new Date().getTime();
+        fetch(gasURL + "?action=getPriceData&t=" + t).then(res => res.json()).then(res => { 
+            if(res.status === 'success') { 
+                priceDict = res.data; 
+                window.voyageDefaults = res.voyageDefaults || {}; 
+                statusEl.innerText = "(READY)"; 
+                statusEl.style.color = "var(--success)"; 
+            } 
+        });
+        fetch(gasURL + "?action=getGroupList&t=" + t).then(res => res.json()).then(res => { if(res.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; res.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } });
+    };
+
+    function switchTab(id) { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelector(`.nav-tab[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'page-logs') loadLogs(false); }
+    
+    function generateRoomId() { return "RM-" + Date.now().toString().slice(-5) + Math.floor(Math.random()*10); }
+
+    function handleGroupInput() { 
+        for(let i=1; i<=blockCounter; i++) {
+            applyVoyageDefaults(i);
+            autoCalcPrice(i); 
+        }
+    }
+
+    function applyVoyageDefaults(num) {
+        const block = document.getElementById(`p-block-${num}`);
+        if(!block) return;
+        const groupCode = document.getElementById('global-groupCode').value.trim();
+        let defs = window.voyageDefaults[groupCode];
+        if (defs) {
+            block.querySelector('.h-portFee').value = defs.portFee;
+            block.querySelector('.h-tips').value = defs.tips;
+            block.querySelector('.h-intlTax').value = defs.intlTax;
+            block.querySelector('.h-alaskaTax').value = defs.alaskaTax;
+            if (defs.boardPort !== undefined && defs.boardPort !== "") block.querySelector('.p-board-port').value = defs.boardPort;
+            if (defs.offPort !== undefined && defs.offPort !== "") block.querySelector('.p-off-port').value = defs.offPort;
+        } else {
+            block.querySelector('.h-portFee').value = 0;
+            block.querySelector('.h-tips').value = 0;
+            block.querySelector('.h-intlTax').value = 0;
+            block.querySelector('.h-alaskaTax').value = 0;
+            block.querySelector('.p-board-port').value = "Yokohama";
+            block.querySelector('.p-off-port').value = "Keelung";
+        }
+    }
+
+    function handleGroupChange() {
+        const groupCode = document.getElementById('global-groupCode').value;
+        if(!groupCode) return;
+        const step2 = document.getElementById('step-2-container'); step2.style.display = 'block'; setTimeout(() => step2.style.opacity = '1', 50);
+        if (passengerCount === 0) addPassenger();
+        const t = new Date().getTime();
+        fetch(gasURL + "?action=getExistingPassengers&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { if(res.status === 'success') { existingPassengers = res.data; updateAllJoinSelects(); } });
+        for(let i=1; i<=blockCounter; i++) {
+            applyVoyageDefaults(i);
+            autoCalcPrice(i);
+        }
+    }
+
+    function updateAllJoinSelects() { 
+        const dlName = document.getElementById('existing-list-name');
+        const dlId = document.getElementById('existing-list-id');
+        dlName.innerHTML = ''; dlId.innerHTML = '';
+        existingPassengers.forEach(p => { 
+            if(p.name) { const o = document.createElement('option'); o.value = p.name; dlName.appendChild(o); }
+            if(p.id) { const o = document.createElement('option'); o.value = p.id; dlId.appendChild(o); }
+        });
+    }
+
+    function joinExistingRoom(inputEl, num, type) {
+        const roomIdInput = document.querySelector(`#p-block-${num} .p-room-id`);
+        const currentRoomSelect = document.querySelector(`#p-block-${num} .p-room`);
+        const searchVal = inputEl.value.trim().toLowerCase();
+        if (!searchVal) { roomIdInput.value = generateRoomId(); return; }
+        const found = existingPassengers.find(p => (type === 'name' && p.name.toLowerCase() === searchVal) || (type === 'id' && p.id && String(p.id).toLowerCase() === searchVal));
+        if (found) { 
+            if (currentRoomSelect.value !== found.roomType) {
+                customAlert(`綁定失敗！親友 [${found.name}] 的房型為「${found.roomType || '未指定'}」，與目前所選房型不一致。請確認房型相同後再綁定。`, "warning");
+                inputEl.value = ""; roomIdInput.value = generateRoomId(); return;
+            }
+            if(found.roomGroup) { roomIdInput.value = found.roomGroup; } 
+            else { roomIdInput.value = `與NO.${found.no} ${found.name} (ID:${found.id||'--'}) 同房`; }
+            customAlert(`已成功掛載 [${found.name}] 的同房狀態！`, "success");
+        } else { customAlert(`找不到此條件的親友，請重新確認。`, "warning"); inputEl.value = ""; roomIdInput.value = generateRoomId(); }
+    }
+
+    function syncP1ToAll() {
+        const p1PromoInput = document.querySelector('#p-block-1 .p-promo');
+        const p1RoomSelect = document.querySelector('#p-block-1 .p-room');
+        if(!p1PromoInput || !p1RoomSelect) return;
+        const p1Promo = p1PromoInput.value; const p1Room = p1RoomSelect.value;
+        for (let i = 2; i <= blockCounter; i++) {
+            const block = document.getElementById(`p-block-${i}`);
+            if(!block) continue;
+            const companionPromo = block.querySelector('.p-promo'); if (companionPromo) companionPromo.value = p1Promo;
+            const check = block.querySelector('.sync-check');
+            if (check && check.checked) { const companionRoom = block.querySelector('.p-room'); if(companionRoom) companionRoom.value = p1Room; }
+            autoCalcPrice(i);
+        }
+        autoCalcPrice(1); 
+    }
+
+    function autoCalcPrice(num) {
+        const block = document.getElementById(`p-block-${num}`);
+        if(!block) return;
+        const promoCode = block.querySelector('.p-promo').value.trim(); const groupCode = document.getElementById('global-groupCode').value.trim(); 
+        const fullRoomType = block.querySelector('.p-room').value.trim(); 
+        
+        let roomCode = fullRoomType;
+        if (fullRoomType) { const parts = fullRoomType.split('-'); if (parts.length >= 3) roomCode = parts[parts.length - 2].trim();
+        else if (parts.length === 2) roomCode = parts[1].trim(); }
+
+        let lookupKey = promoCode + "-" + groupCode + "-" + roomCode;
+        let lastLookup = block.getAttribute('data-last-lookup');
+        if(lookupKey !== lastLookup) { 
+            let pd = priceDict[lookupKey];
+            if(pd) { 
+                block.querySelector('.calc-sf').value = pd.sfPrice;
+                if (!window.voyageDefaults || !window.voyageDefaults[groupCode]) {
+                    block.querySelector('.h-portFee').value = pd.portTax;
+                }
+            } else { 
+                block.querySelector('.calc-sf').value = "0";
+            } 
+            block.setAttribute('data-last-lookup', lookupKey);
+        }
+
+        let sf = Number(block.querySelector('.calc-sf').value) || 0; let jgd = Number(block.querySelector('.h-jgd').value) || 0;
+        let agtd = Number(block.querySelector('.h-agtd').value) || 0;
+        let subA = Number(block.querySelector('.h-subA').value) || 0; let subB = Number(block.querySelector('.h-subB').value) || 0;
+        let toilet = Number(block.querySelector('.h-toilet').value) || 0;
+        let intlTax = Number(block.querySelector('.h-intlTax').value) || 0; let visa = Number(block.querySelector('.h-alaskaTax').value) || 0;
+        let accRoom = Number(block.querySelector('.h-accRoom').value) || 0;
+        let upgRoom = Number(block.querySelector('.h-upgRoom').value) || 0; let portFee = Number(block.querySelector('.h-portFee').value) || 0;
+        let tips = Number(block.querySelector('.h-tips').value) || 0;
+
+        const isInside = fullRoomType.includes("內艙");
+        const commRate = isInside ? 0.18 : 0.15;
+        block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
+        
+        // 修正：基本旅費總價需扣除 JGD 與 AGTD
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips;
+        // 佣金計算基準
+        let commBase = sf - jgd - agtd; 
+        block.querySelector('.calc-total').value = baseTotal;
+        // 佣金顯示正數
+        let commission = Math.round(commBase * commRate);
+        block.querySelector('.calc-comm').value = commission;
+        
+        // 應付計算減去佣金
+        let setPay = baseTotal - commission;
+        
+        let childRemark = block.querySelector('.p-child-remark') ? block.querySelector('.p-child-remark').value : "";
+        if (childRemark === "2-6歲") { setPay = 0; } else if (childRemark === "7-12歲") { setPay = Math.round(setPay * 0.1); }
+        block.querySelector('.calc-set').value = setPay;
+    }
+
+    function addPassenger() {
+        const p1PromoInput = document.querySelector('#p-block-1 .p-promo');
+        let inheritedPromo = ""; let inheritedRoom = "";
+        if (passengerCount >= 1) { inheritedPromo = p1PromoInput ? p1PromoInput.value.trim() : getCurrentYYYYMM(); inheritedRoom = document.querySelector('#p-block-1 .p-room').value; }
+        if (passengerCount >= 4) { customAlert("一筆訂單最多只能包含 4 位旅客！", "warning"); return; }
+        
+        passengerCount++; blockCounter++;
+        const num = blockCounter; const isMain = (passengerCount === 1);
+        const defaultRoomId = isMain ? generateRoomId() : document.querySelector('.p-room-id')?.value || generateRoomId();
+        const wrapper = document.getElementById('passengers-wrapper'); const block = document.createElement('div'); block.className = 'passenger-block'; block.id = `p-block-${num}`;
+        block.innerHTML = `
+            <div class="passenger-header">
+                <h3 class="p-title">旅客 ${passengerCount} ${isMain ? '(主聯絡人)' : '(同行者)'}</h3>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; margin:0;"><input type="checkbox" class="p-waitlist" style="width:15px; height:15px; margin:0; accent-color:var(--waitlist);"> 設為候補</label>
+                    ${!isMain ? `<button type="button" class="btn-remove" onclick="removePassenger(${num})" style="margin:0; height:auto;">移除</button>` : ''}
+                </div>
+            </div>
+            <div class="room-sync-box">
+                <div class="input-group" style="flex:none;"><label>系統房號配置</label><input type="text" class="p-room-id" value="${defaultRoomId}" readonly style="width:120px; height:38px;"></div>
+                ${!isMain ? `<div style="height:38px; display:flex; align-items:center; flex:none;"><label style="margin:0; display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="sync-check" checked onchange="toggleRoomSync(${num})"> 與第一位同房</label></div>` : ''}
+                <div class="input-group" style="flex:none; width: 250px;">
+                    <label>與既有親友同房 (選姓名或ID)</label>
+                    <div style="display:flex; gap:5px;">
+                        <div class="input-wrapper" style="width:120px;"><input type="text" class="join-existing-name" id="join-existing-name-${num}" list="existing-list-name" placeholder="選姓名..." onchange="joinExistingRoom(this, ${num}, 'name')" style="height:38px; padding-right:20px;"><span class="clear-btn" onclick="clearInput('join-existing-name-${num}')" style="top:50%; transform:translateY(-50%); font-size:14px;">&times;</span></div>
+                        <div class="input-wrapper" style="width:120px;"><input type="text" class="join-existing-id" id="join-existing-id-${num}" list="existing-list-id" placeholder="選ID..." onchange="joinExistingRoom(this, ${num}, 'id')" style="height:38px; padding-right:20px;"><span class="clear-btn" onclick="clearInput('join-existing-id-${num}')" style="top:50%; transform:translateY(-50%); font-size:14px;">&times;</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-5">
+                <div class="input-group"><label>東南訂編</label><input type="text" class="p-order-id" required></div>
+                <div class="input-group"><label>業務</label><input type="text" class="p-sales" required placeholder="例：門市-業務名稱"></div>
+                <div class="input-group"><label>中文姓名</label><input type="text" class="p-name" required></div>
+                <div class="input-group"><label>NAME (護照英文)</label><input type="text" class="p-ename" style="text-transform:uppercase" required></div>
+                <div class="input-group"><label>性別</label><select class="p-gender"><option value="F">女 (F)</option><option value="M">男 (M)</option></select></div>
+            </div>
+            <div class="grid-5">
+                <div class="input-group"><label>生日</label><input type="text" class="p-birth" placeholder="YYYY/MM/DD" maxlength="10" oninput="formatDateInput(this)" required></div>
+                <div class="input-group"><label>報名來源</label><input type="text" class="p-source" value="" placeholder="例：1/11 台北"></div>
+                <div class="input-group"><label>老客</label><input type="text" class="p-old-customer" placeholder="例：118/否"></div>
+                <div class="input-group"><label>登船港</label><input type="text" class="p-board-port" value="Yokohama"></div>
+                <div class="input-group"><label>離船港</label><input type="text" class="p-off-port" value="Keelung"></div>
+            </div>
+            <div class="grid-5">
+                <div class="input-group"><label>當月優惠價</label><input type="text" class="p-promo" value="${isMain ? getCurrentYYYYMM() : inheritedPromo}" oninput="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}"></div>
+                <div class="input-group"><label>各種優惠價/特典</label><input type="text" class="p-promo-extras" placeholder="例：1月繳清價-JGD 1萬(1萬)"></div>
+                <div class="input-group"><label>預存金</label><input type="text" class="p-coupon-dep"></div>
+                <div class="input-group"><label>優惠券</label><input type="text" class="p-coupon-vou"></div>
+                <div class="input-group"><label>房型</label><select class="p-room" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" ${!isMain ? 'disabled' : ''}>${roomOptionsHTML}</select></div>
+            </div>
+            
+            <div class="toggle-btn" onclick="toggleAdvanced(${num})">[+] 展開/隱藏 備註欄位</div>
+            <div class="advanced-fields" id="advanced-${num}">
+                <div class="grid-4">
+                    <div class="input-group"><label>特殊需求</label><input type="text" class="p-special-req"></div>
+                    <div class="input-group"><label>預購 (5萬)</label><input type="number" class="p-deposit" value="50000"></div>
+                    <div class="input-group"><label>孩童備註</label><select class="p-child-remark" onchange="autoCalcPrice(${num})">
+                        <option value="">無</option><option value="2-6歲">2-6歲 (SET 0)</option><option value="7-12歲">7-12歲 (SET 10%)</option>
+                    </select></div>
+                    <div class="input-group"><label>其他備註</label><input type="text" class="p-other-remark"></div>
+                </div>
+            </div>
+
+            <div class="cost-calc-area">
+                <div class="section-title" style="margin-top:0; margin-bottom:15px; border-left-color:var(--accent); color:var(--primary); font-size:12px;">▍ 費用即時計算區</div>
+                <div class="grid-5" style="margin-bottom: 10px;">
+                    <div class="input-group"><label>SF船費</label><input type="text" class="calc-sf" readonly></div>
+                    <div class="input-group"><label>港務費</label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>小費</label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>JG D</label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>AGT D</label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                </div>
+                <div class="grid-5" style="margin-bottom: 10px;">
+                    <div class="input-group"><label>下鋪A</label><input type="number" class="h-subA" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>下鋪B</label><input type="number" class="h-subB" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>免治馬桶</label><input type="number" class="h-toilet" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>國際旅客稅</label><input type="number" class="h-intlTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>阿拉斯加稅</label><input type="number" class="h-alaskaTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                </div>
+                <div class="grid-5" style="margin-bottom: 20px;">
+                    <div class="input-group"><label>無障礙房型</label><input type="number" class="h-accRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>房型升等</label><input type="number" class="h-upgRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                </div>
+                <div class="cost-calc-grid grid-4">
+                    <div class="input-group"><label>基本旅費總價</label><input type="text" class="calc-total" readonly style="font-weight:700; color:var(--primary);"></div>
+                    <div class="input-group"><label>佣金%</label><input type="text" class="calc-comm-rate" readonly></div>
+                    <div class="input-group"><label>佣金</label><input type="text" class="calc-comm" readonly style="font-weight:600;"></div>
+                    <div class="input-group"><label style="color:var(--accent);">SET應付</label><input type="text" class="calc-set" readonly></div>
+                </div>
+            </div>
+        `;
+        wrapper.appendChild(block);
+        
+        block.querySelector('.p-room').value = ""; 
+        if (!isMain && inheritedRoom) block.querySelector('.p-room').value = inheritedRoom;
+        
+        applyVoyageDefaults(num);
+        autoCalcPrice(num);
+    }
+
+    function toggleRoomSync(num) {
+        const check = document.querySelector(`#p-block-${num} .sync-check`); const roomIdInput = document.querySelector(`#p-block-${num} .p-room-id`); const roomSelect = document.querySelector(`#p-block-${num} .p-room`);
+        if (check.checked) { roomIdInput.value = document.querySelector('#p-block-1 .p-room-id').value; roomSelect.value = document.querySelector('#p-block-1 .p-room').value; roomSelect.disabled = true; autoCalcPrice(num); } else { roomIdInput.value = generateRoomId(); roomSelect.disabled = false; }
+    }
+    function toggleAdvanced(num) { const el = document.getElementById(`advanced-${num}`); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
+    function removePassenger(num) { document.getElementById(`p-block-${num}`).remove(); passengerCount--; const titles = document.querySelectorAll('.p-title'); titles.forEach((title, index) => { title.innerText = `旅客 ${index + 1} ${index === 0 ? '(主聯絡人)' : '(同行者)'}`; }); }
+
+    function submitOrder() {
+        const groupCode = document.getElementById('global-groupCode').value;
+        const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
+        document.querySelectorAll('.passenger-block').forEach(b => {
+            finalData.push({
+                groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
+                name: b.querySelector('.p-name').value, ename: b.querySelector('.p-ename').value.toUpperCase(), gender: b.querySelector('.p-gender').value, birth: b.querySelector('.p-birth').value,
+                source: b.querySelector('.p-source').value, oldCustomer: b.querySelector('.p-old-customer').value, deposit: b.querySelector('.p-deposit').value,
+                roomType: b.querySelector('.p-room').value, promotion: b.querySelector('.p-promo').value, boardPort: b.querySelector('.p-board-port').value, offPort: b.querySelector('.p-off-port').value,
+                specialReq: b.querySelector('.p-special-req').value, childRemark: b.querySelector('.p-child-remark').value, otherRemark: b.querySelector('.p-other-remark').value, promoExtras: b.querySelector('.p-promo-extras').value, couponDeposit: b.querySelector('.p-coupon-dep').value, couponVoucher: b.querySelector('.p-coupon-vou').value,
+                portFee: b.querySelector('.h-portFee').value, tips: b.querySelector('.h-tips').value, jgd: b.querySelector('.h-jgd').value, agtD: b.querySelector('.h-agtd').value,
+                subA: b.querySelector('.h-subA').value, subB: b.querySelector('.h-subB').value, toilet: b.querySelector('.h-toilet').value, intlTax: b.querySelector('.h-intlTax').value, visa: b.querySelector('.h-alaskaTax').value, accRoom: b.querySelector('.h-accRoom').value, upgRoom: b.querySelector('.h-upgRoom').value,
+                sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
+            });
+        });
+        if(finalData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
+        showLoading("DATA SYNCING...");
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
+            hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
+        }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
+    }
+
+    function searchList() {
+        const groupCode = document.getElementById('search-groupCode').value;
+        if(!groupCode) { customAlert("請先輸入或選擇欲搜尋的航程代碼", "warning"); return; } showLoading("FETCHING DATA...");
+        const t = new Date().getTime();
+        fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("讀取失敗，請確認網路連線。", "error"); });
+    }
+
+    async function batchUpdateFee(type) {
+        let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
+        if (fee === null || fee.trim() === "") return; 
+        if (isNaN(fee)) return customAlert("請輸入有效的數字！", "error");
+        let code = await customPrompt(`安全驗證`, `請輸入管理員確認碼：`, true);
+        if (code === null) return; 
+        if (code !== "0327") return customAlert("確認碼錯誤，操作已取消。", "error");
+        let updatedCount = 0;
+        document.querySelectorAll('.adv-input[data-col="' + type + '"]').forEach(input => { 
+            input.value = fee; 
+            let no = input.closest('tr').id.replace('row-', ''); 
+            calcGridRow(no); 
+            updatedCount++;
+        });
+        customAlert(`驗證成功！已將畫面上 ${updatedCount} 位旅客的「${type}」更新為 ${fee}。\n\n⚠️ 請記得點擊右側的【批次儲存】按鈕，正式上傳至資料庫！`, "success");
+    }
+
+    function calcGridRow(no) {
+        let tr = document.getElementById('row-' + no);
+        if(!tr) return;
+        let sf = Number(tr.querySelector('.adv-input[data-col="SF船費"]')?.value) || 0; 
+        let jgd = Number(tr.querySelector('.adv-input[data-col="JGD"]')?.value) || 0; 
+        let agtd = Number(tr.querySelector('.adv-input[data-col="AGTD"]')?.value) || 0;
+        let subA = Number(tr.querySelector('.adv-input[data-col="下鋪指定A"]')?.value) || 0; 
+        let subB = Number(tr.querySelector('.adv-input[data-col="下鋪指定B"]')?.value) || 0; 
+        let toilet = Number(tr.querySelector('.adv-input[data-col="免治馬桶"]')?.value) || 0;
+        let intlTax = Number(tr.querySelector('.adv-input[data-col="國際旅客稅"]')?.value) || 0; 
+        let visa = Number(tr.querySelector('.adv-input[data-col="阿拉斯加稅"]')?.value) || 0; 
+        let accRoom = Number(tr.querySelector('.adv-input[data-col="無障礙房型"]')?.value) || 0;
+        let upgRoom = Number(tr.querySelector('.adv-input[data-col="房型升等"]')?.value) || 0; 
+        let portFee = Number(tr.querySelector('.adv-input[data-col="港務費"]')?.value) || 0; 
+        let tips = Number(tr.querySelector('.adv-input[data-col="小費"]')?.value) || 0;
+        let nameChangeAmt = Number(tr.querySelector('.edit-nameChange')?.value) || 0;
+        
+        let room = tr.querySelector('.edit-room').value || ""; let isInside = room.includes("內艙");
+        let commRate = isInside ? 0.18 : 0.15; 
+        tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
+        
+        // 修正：基本旅費總價需扣除 JGD 與 AGTD
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips;
+        // 佣金計算基準
+        let commBase = sf - jgd - agtd; 
+        tr.querySelector('.edit-tot').value = baseTotal; 
+        // 佣金顯示正數
+        let comm = Math.round(commBase * commRate); 
+        tr.querySelector('.edit-comm').value = comm; 
+        // 應付減去佣金
+        tr.querySelector('.edit-set').value = baseTotal - comm + nameChangeAmt;
+    }
+
+    function fetchDictForGridRow(no) {
+        let tr = document.getElementById('row-' + no);
+        if(!tr) return;
+        let promo = tr.querySelector('.edit-promo').value.trim(); let roomFull = tr.querySelector('.edit-room').value.trim(); let groupCode = document.getElementById('search-groupCode').value.trim(); 
+        let roomCode = roomFull;
+        let parts = roomFull.split('-'); if(parts.length >= 3) roomCode = parts[parts.length-2].trim(); else if(parts.length === 2) roomCode = parts[1].trim();
+        let lookupKey = promo + "-" + groupCode + "-" + roomCode; let pd = priceDict[lookupKey];
+        if(pd) { 
+            let sfNode = tr.querySelector('.adv-input[data-col="SF船費"]');
+            if(sfNode) sfNode.value = pd.sfPrice; 
+            let taxNode = tr.querySelector('.adv-input[data-col="港務費"]'); if(taxNode) taxNode.value = pd.portTax;
+        } 
+        calcGridRow(no);
+    }
+
+    function getVal(item, colName) { const idx = window.currentGroupHeaders.indexOf(colName); return idx > -1 ? (item.raw[idx] !== undefined ? item.raw[idx] : "") : ""; }
+
+    function getCleanGroup(groupStr) {
+        if (!groupStr) return "";
+        let firstTag = String(groupStr).split(',')[0].trim();
+        return firstTag.replace(/\(L\)$/, '');
+    }
+
+    function renderList() {
+        const listBody = document.getElementById('list-body');
+        const filterStatus = document.getElementById('status-filter').value; const filterName = document.getElementById('search-name').value.trim().toLowerCase();
+        
+        let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等"];
+        let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
+        
+        let headHtml = '<tr><th class="sticky-1">NO.</th><th style="width:160px;">特殊需求</th><th class="sticky-2">旅客姓名</th><th class="sticky-3">NAME</th>';
+        targetCols.forEach(c => { 
+            if(!["NO","特殊需求","旅客姓名","NAME","Status"].includes(c)) {
+                let w = "75px";
+                if(c === "房型") w = "220px";
+                if(c === "登船港" || c === "離船港" || c === "ID" || c === "訂編" || c === "業務") w = "90px";
+                if(c === "生日") w = "110px"; 
+                if(c === "基本旅費總價" || c === "SET應付" || c === "名義變更金額") w = "85px";
+                headHtml += `<th style="width:${w};">${c}</th>`;
+            }
+        });
+        advCols.forEach(c => { 
+            if (c === "港務費" || c === "小費") {
+                headHtml += `<th class="adv-col" style="width:90px; cursor:pointer; color:var(--accent); text-decoration:underline;" onclick="batchUpdateFee('${c}')" title="點擊以批次更新所有旅客的${c}">${c} ✎</th>`;
+            } else { headHtml += `<th class="adv-col" style="width:90px; color:var(--accent);">${c}</th>`; }
+        });
+        headHtml += '<th style="width:75px; border-left:2px solid var(--border); text-align:center;">同房管理</th>';
+        headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">批次儲存</button></th></tr>';
+        document.getElementById('list-head').innerHTML = headHtml;
+        listBody.innerHTML = "";
+
+        if(!window.currentGroupData || window.currentGroupData.length === 0) { listBody.innerHTML = '<tr><td colspan="45" style="text-align:center; padding:50px;">此航程無資料</td></tr>'; return; }
+
+        let filteredData = window.currentGroupData.filter(item => {
+            let s = item.status || "";
+            if (filterStatus === "正常") {
+                if (s !== "正常" && s !== "") return false;
+            } else if (filterStatus === "已取消" && s !== "已取消") {
+                return false;
+            } else if (filterStatus === "候補" && s !== "候補") {
+                return false;
+            }
+            if (filterStatus === "群組" && !item.groupNote) return false;
+            if (filterStatus === "同房" && !item.roomGroup) return false;
+            if (filterStatus === "孩童") {
+                let childVal = getVal(item, "孩童備註");
+                if (!childVal || childVal === "無" || childVal.trim() === "") return false;
+            }
+            
+            if (filterName) {
+                let matchName = item.name && String(item.name).toLowerCase().includes(filterName);
+                let matchEname = item.ename && String(item.ename).toLowerCase().includes(filterName);
+                let matchId = item.id && String(item.id).toLowerCase().includes(filterName);
+                if (!matchName && !matchEname && !matchId) return false;
+            }
+            return true;
+        });
+        if(filteredData.length === 0) { listBody.innerHTML = `<tr><td colspan="45" style="text-align:center; padding:50px; color:var(--text-light);">沒有符合條件的名單</td></tr>`; return; }
+
+        const roomCounts = {};
+        filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
+        filteredData.sort((a, b) => {
+            let gA = getCleanGroup(a.groupNote); let gB = getCleanGroup(b.groupNote);
+            let rA = String(a.roomGroup || '').trim(); let rB = String(b.roomGroup || '').trim();
+            let sA = String(getVal(a, '特殊需求') || '').trim(); let sB = String(getVal(b, '特殊需求') || '').trim();
+            let hasGrpA = gA !== ''; let hasGrpB = gB !== '';
+            let hasRoomA = (rA !== '' && roomCounts[rA] > 1); let hasRoomB = (rB !== '' && roomCounts[rB] > 1);
+            let hasSpecA = sA !== ''; let hasSpecB = sB !== '';
+
+            if (filterStatus === "同房") {
+                if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
+                if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+            } else {
+                if (hasGrpA !== hasGrpB) return hasGrpA ? -1 : 1;
+                if (hasGrpA && hasGrpB) {
+                    if (gA !== gB) return gA.localeCompare(gB);
+                    if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
+                    if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+                    if (hasSpecA !== hasSpecB) return hasSpecA ? -1 : 1;
+                } else {
+                    if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
+                    if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+                    if (hasSpecA !== hasSpecB) return hasSpecA ? -1 : 1;
+                }
+            }
+
+            let pA = String(getVal(a, "當月優惠價") || "");
+            let pB = String(getVal(b, "當月優惠價") || "");
+            if (pA !== pB) return pA.localeCompare(pB);
+
+            let sA_src = String(getVal(a, "報名來源") || "");
+            let sB_src = String(getVal(b, "報名來源") || "");
+            if (sA_src !== sB_src) return sA_src.localeCompare(sB_src);
+
+            let eA = String(getVal(a, "各種優惠價/船內特典") || "");
+            let eB = String(getVal(b, "各種優惠價/船內特典") || "");
+            if (eA !== eB) return eA.localeCompare(eB);
+
+            let oA = String(getVal(a, "其他") || "");
+            let oB = String(getVal(b, "其他") || "");
+            if (oA !== oB) return oA.localeCompare(oB);
+            return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+        });
+
+        let groupMap = {}; let roomMap = {};
+        window.currentGroupData.forEach(d => { 
+            let gTags = String(d.groupNote||"").split(',').map(t=>t.trim()).filter(t=>t);
+            gTags.forEach(gt => { 
+                let isL = gt.endsWith('(L)'); let realTag = gt.replace(/\(L\)$/, '');
+                groupMap[realTag] = groupMap[realTag] || []; groupMap[realTag].push(d); 
+                if(isL) { d.isLeader = d.isLeader || {}; d.isLeader[realTag] = true; }
+            });
+            if(d.roomGroup) { roomMap[d.roomGroup] = roomMap[d.roomGroup] || []; roomMap[d.roomGroup].push(d); } 
+        });
+        Object.keys(groupMap).forEach(k => { groupMap[k].sort((a,b) => { let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; if (aL !== bL) return bL - aL; return parseInt(a.no) - parseInt(b.no); }); });
+        const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null;
+        let lastRoom = null;
+
+        filteredData.forEach((item, index) => {
+            let tr = document.createElement('tr'); tr.id = `row-${item.no}`;
+            let isGroup = getCleanGroup(item.groupNote) !== "" && filterStatus !== "同房"; 
+            let isRoom = item.roomGroup && roomCounts[item.roomGroup] > 1;
+            let borderClass = ""; let bgClass = "normal-bg";
+
+            if (isRoom) { if (item.roomGroup !== lastRoom) { if (lastRoom !== null) currentRoomBgIdx = 1 - currentRoomBgIdx; lastRoom = item.roomGroup; } bgClass = currentRoomBgIdx === 0 ? "room-bg-1" : "room-bg-2"; }
+            if (isGroup) {
+                let curGrp = getCleanGroup(item.groupNote);
+                if (curGrp !== lastGrp) { if (lastGrp !== null) currentGrpColorIdx = 1 - currentGrpColorIdx; borderClass += "group-border-top "; lastGrp = curGrp; }
+                borderClass += "group-border-left "; tr.style.setProperty('--grp-color', groupColors[currentGrpColorIdx]);
+                let nextItem = filteredData[index+1];
+                if (!nextItem || getCleanGroup(nextItem.groupNote) !== curGrp) { borderClass += "group-border-bottom "; }
+            } else { lastGrp = null; } 
+
+            tr.className = `${bgClass} ${borderClass}`;
+            if(item.status === "已取消") tr.style.color = "var(--text-light)"; 
+            const dotClass = item.status === "已取消" ? "dot-cancel" : (item.status === "候補" ? "dot-waitlist" : "dot-normal");
+            
+            let tagHTML = '';
+            if (item.groupNote && item.groupNote !== "") { 
+                let gTags = String(item.groupNote).split(',').map(t=>t.trim()).filter(t=>t);
+                gTags.forEach(gt => {
+                    let realTag = gt.replace(/\(L\)$/, ''); if(!groupMap[realTag] || groupMap[realTag].length===0) return;
+                    let leaderNO = groupMap[realTag][0].no; 
+                    let membersStr = `【群組代號: ${realTag}】<br>成員清單：<br>` + groupMap[realTag].map(m => `${m.no===leaderNO?'👑 ':''}${m.name} (ID: ${m.id||'--'})`).join('<br>'); 
+                    tagHTML += `<span class="tag tag-group" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">群</span>`; 
+                });
+            }
+            if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>'); tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
+
+            let specialReq = getVal(item, '特殊需求');
+            let specialReqHtml = '';
+            if (specialReq.trim() !== '') {
+                let escapedReq = specialReq.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '<br>');
+                specialReqHtml = `<span class="tag tag-special" style="margin-right:5px; flex:none; padding:2px 5px;" onmouseenter="showTagTooltip(event, '【特殊需求】<br>${escapedReq}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">特</span>`;
+            }
+
+            let childVal = getVal(item, "孩童備註");
+            if (childVal && (childVal.includes("2-6歲") || childVal.includes("7-12歲"))) {
+                tagHTML += `<span class="tag" style="background-color:#10B981; color:white; padding:2px 5px;" onmouseenter="showTagTooltip(event, '孩童備註: ${childVal}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">童</span>`;
+            }
+
+            let roomCancelBtn = item.roomGroup ? `<button class="btn-update" style="border-color:var(--waitlist); color:var(--waitlist); width:100%; justify-content:center;" onclick="cancelRoomingLocally('${item.no}', this)">取消同房</button>` : '';
+
+            let html = `
+                <td class="sticky-1" style="background-color: inherit;">${item.no}</td>
+                <td><div style="display:flex; align-items:center;">${specialReqHtml}<input class="td-input req-val" style="flex:1; min-width:0;" value="${specialReq}"></div></td>
+                <td class="sticky-2" style="background-color: inherit; overflow:visible;"><span class="status-dot ${dotClass}"></span>${item.name}${tagHTML}</td>
+                <td class="sticky-3" style="background-color: inherit;" title="${item.ename}">${item.ename}</td>
+                <td><input type="text" class="td-input edit-id" value="${item.id || ''}"></td>
+                <td><input type="text" class="td-input edit-birth" value="${fmtDate(getVal(item, "生日"))}"></td>
+                <td><input type="text" class="td-input edit-source" value="${getVal(item, "報名來源")}"></td>
+                <td><input type="text" class="td-input edit-oldCustomer" value="${getVal(item, "老客")}"></td>
+                <td><input type="text" class="td-input edit-promo" value="${getVal(item, "當月優惠價")}" onchange="fetchDictForGridRow('${item.no}')"></td>
+                <td><input type="text" class="td-input edit-promoExtras" value="${getVal(item, "各種優惠價/船內特典")}"></td>
+                <td><input type="text" class="td-input edit-couponDep" value="${getVal(item, "Coupon船內預存金")}"></td>
+                <td><input type="text" class="td-input edit-couponVou" value="${getVal(item, "Coupon船內優惠券")}"></td>
+                <td><select class="td-input edit-room" onchange="fetchDictForGridRow('${item.no}')"><option value="${item.roomType}" selected>${item.roomType}</option>${roomOptionsHTML.replace(`<option value="">-- 請選擇房型 --</option>`, '')}</select></td>
+                <td><input type="text" class="td-input edit-bp" value="${getVal(item, "登船港")}"></td>
+                <td><input type="text" class="td-input edit-op" value="${getVal(item, "離船港")}"></td>
+                <td><input type="text" class="td-input td-readonly edit-tot" value="${getVal(item, "基本旅費總價")}" readonly></td>
+                <td><input type="text" class="td-input td-readonly edit-crate" value="${getVal(item, "佣金%")}" readonly style="color:var(--text-light); font-weight:normal;"></td>
+                <td><input type="text" class="td-input td-readonly edit-comm" value="${getVal(item, "佣金")}" readonly style="color:var(--danger);"></td>
+                <td><input type="number" class="td-input edit-nameChange" value="${getVal(item, "名義變更金額")}" oninput="calcGridRow('${item.no}')"></td>
+                <td><input type="text" class="td-input td-readonly edit-set" value="${getVal(item, "SET應付")}" readonly style="color:var(--accent);"></td>
+                <td><input type="text" class="td-input edit-operator" value="${getVal(item, "業務")}"></td>
+                <td><input type="text" class="td-input edit-orderId" value="${getVal(item, "訂編")}"></td>
+            `;
+
+            advCols.forEach(c => { 
+                let extraAttr = ''; let extraClass = '';
+                if (c === "港務費" || c === "小費") { extraAttr = `type="number" readonly`; extraClass = ` td-readonly`; }
+                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
+                else { extraAttr = `type="text"`; }
+                html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${getVal(item, c)}" ${extraAttr}></td>`;
+            });
+
+            html += `
+                <td style="border-left: 2px solid var(--border); text-align: center; vertical-align: middle; padding: 0 8px;">
+                    <input type="hidden" class="edit-roomGroup" value="${item.roomGroup || ''}">
+                    ${roomCancelBtn}
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    <div style="display:flex; justify-content:center; align-items:center; width:100%;">
+                        ${item.status === "已取消" ? `<button class="btn-remove" style="color:var(--success);" onclick="restoreOrder('${item.no}')">復原訂單</button>` : `<button class="btn-remove" onclick="openCancelModal('${item.no}')">取消訂單</button>`}
+                    </div>
+                </td>
+            `;
+            tr.innerHTML = html; listBody.appendChild(tr);
+        });
+        applyColToggle(); 
+    }
+
+    function openColToggleModal() {
+        const list = document.getElementById('col-toggle-list');
+        list.innerHTML = "";
+        document.querySelectorAll('#list-head th:not(.sticky-1):not(.sticky-2):not(.sticky-3)').forEach((th, idx) => {
+            let text = th.innerText.replace(' ✎', '').trim();
+            if(text && !text.includes("同房管理") && !text.includes("操作")) {
+                let isChecked = hiddenCols.includes(idx + 3) ? "checked" : "";
+                list.innerHTML += `<label><input type="checkbox" class="col-toggle-cb" data-idx="${idx + 3}" ${isChecked}> ${text}</label>`;
+            }
+        });
+        document.getElementById('col-toggle-modal').classList.add('show');
+    }
+    function applyColToggle() {
+        hiddenCols = Array.from(document.querySelectorAll('.col-toggle-cb:checked')).map(cb => parseInt(cb.getAttribute('data-idx')));
+        const rows = document.querySelectorAll('#dataTable tr');
+        rows.forEach(tr => {
+            Array.from(tr.children).forEach((td, idx) => { if(td.tagName === 'TH' || td.tagName === 'TD') td.style.display = hiddenCols.includes(idx) ? 'none' : 'table-cell'; });
+        });
+        document.getElementById('col-toggle-modal').classList.remove('show');
+    }
+    function resetColToggle() { 
+        document.querySelectorAll('.col-toggle-cb').forEach(cb => cb.checked = false);
+        hiddenCols = []; 
+        applyColToggle(); 
+    }
+
+    function cancelRoomingLocally(no, btn) {
+        let tr = document.getElementById('row-' + no);
+        if(tr) { 
+            tr.querySelector('.edit-roomGroup').value = ""; 
+            btn.innerText = "已解除";
+            btn.disabled = true; 
+            btn.style.opacity = "0.5";
+            customAlert("已清空此人的同房代號，請點擊右上角【批次儲存更新】以寫入資料庫。", "success"); 
+        }
+    }
+
+    function batchUpdateRows() {
+        const rows = document.querySelectorAll('#list-body tr[id^="row-"]');
+        const updates = []; const changesLog = [];
+        rows.forEach(tr => {
+            const no = tr.id.replace('row-', ''); const orig = window.currentGroupData.find(d => String(d.no) === no); if(!orig) return;
+            let fields = {}; let rowChanges = [];
+            
+            const check = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
+            
+            check(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
+            check(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
+            check(fmtDate(getVal(orig, "生日")), tr.querySelector('.edit-birth').value, '生日', '生日');
+            check(getVal(orig, "報名來源"), tr.querySelector('.edit-source').value, '報名來源', '報名來源');
+            check(getVal(orig, "老客"), tr.querySelector('.edit-oldCustomer').value, '老客', '老客');
+            check(getVal(orig, "當月優惠價"), tr.querySelector('.edit-promo').value, '當月優惠價', '當月優惠價');
+            check(getVal(orig, "各種優惠價/船內特典"), tr.querySelector('.edit-promoExtras').value, '各種優惠價/船內特典', '各種優惠價/船內特典');
+            check(getVal(orig, "Coupon船內預存金"), tr.querySelector('.edit-couponDep').value, '預存金', 'Coupon船內預存金');
+            check(getVal(orig, "Coupon船內優惠券"), tr.querySelector('.edit-couponVou').value, '優惠券', 'Coupon船內優惠券');
+            check(orig.roomType || '', tr.querySelector('.edit-room').value, '房型', '房型');
+            check(getVal(orig, "登船港"), tr.querySelector('.edit-bp').value, '登船港', '登船港');
+            check(getVal(orig, "離船港"), tr.querySelector('.edit-op').value, '離船港', '離船港');
+            check(getVal(orig, "基本旅費總價"), tr.querySelector('.edit-tot').value, '基本旅費總價', '基本旅費總價');
+            check(getVal(orig, "佣金%"), tr.querySelector('.edit-crate').value, '佣金%', '佣金%');
+            check(getVal(orig, "佣金"), tr.querySelector('.edit-comm').value, '佣金', '佣金');
+            check(getVal(orig, "名義變更金額"), tr.querySelector('.edit-nameChange').value, '名義變更金', '名義變更金額');
+            check(getVal(orig, "SET應付"), tr.querySelector('.edit-set').value, 'SET應付', 'SET應付');
+            check(getVal(orig, "業務"), tr.querySelector('.edit-operator').value, '業務', '業務');
+            check(getVal(orig, "訂編"), tr.querySelector('.edit-orderId').value, '訂編', '訂編');
+            check(orig.roomGroup || '', tr.querySelector('.edit-roomGroup').value, '同房註記', '同房註記');
+
+            tr.querySelectorAll('.adv-input').forEach(input => { let c = input.getAttribute('data-col'); check(getVal(orig, c), input.value, c, c); });
+            if (rowChanges.length > 0) { updates.push({no: no, fields: fields}); changesLog.push(`NO.${no} ${orig.name} (ID: ${orig.id||'--'}) ${rowChanges.join(', ')}`); }
+        });
+
+        if (updates.length === 0) { customAlert("無資料可更新！", "warning"); return; }
+        showLoading("UPDATING...");
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'batchUpdateRows', updates: updates, changesLog: changesLog, operator: document.getElementById('current-username').innerText }) })
+        .then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; customAlert(`整批寫入成功！`, "success"); searchList(); } else { customAlert("更新失敗：" + res.message, "error"); } })
+        .catch(err => { hideLoading(); customAlert("網路錯誤，請稍後再試。", "error"); });
+    }
+
+    function exportExcel() {
+        if(!window.currentGroupData || window.currentGroupData.length === 0) return customAlert("無資料可匯出！", "warning");
+        let exportData = []; 
+        exportData.push(window.currentGroupHeaders);
+        let bIdx = window.currentGroupHeaders.indexOf("生日");
+
+        window.currentGroupData.forEach(item => { 
+            let r = [...item.raw];
+            if(bIdx > -1) r[bIdx] = fmtDate(r[bIdx]);
+            exportData.push(r); 
+        });
+        let wb = XLSX.utils.book_new(); let ws = XLSX.utils.aoa_to_sheet(exportData);
+        XLSX.utils.book_append_sheet(wb, ws, "航程名單");
+        let groupCode = document.getElementById('search-groupCode').value || "未知";
+        let dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+        XLSX.writeFile(wb, `(${groupCode}) 航程名單 (${dateStr}).xlsx`);
+    }
+
+    function generateTagIdStr() { return (managerType === "群組備註" ? "GRP-" : "RM-") + Date.now().toString().slice(-5); }
+    
+    function openManagerModal(type) {
+        if(!window.currentGroupData || window.currentGroupData.length === 0) return customAlert("請先搜尋並載入航程名單！", "warning");
+        managerType = type;
+        document.getElementById('manager-title').innerText = type === "群組備註" ? "👑 群組與成員管理" : "🛌 同房名單管理";
+        document.getElementById('manager-section-1-title').innerText = type === "群組備註" ? "1. 既有群組或新增群組" : "1. 既有同房或新增同房";
+        document.getElementById('manager-input-label').innerText = type === "群組備註" ? "群組名稱" : "同房名稱";
+        document.getElementById('manager-search-input').value = "";
+        let tags = new Set();
+        window.currentGroupData.forEach(d => { 
+            let gTags = String(getVal(d, type)).split(',').map(t=>t.trim().replace(/\(L\)$/, '')).filter(t=>t);
+            gTags.forEach(t => tags.add(t));
+        });
+        let existingSelect = document.getElementById('manager-select-existing');
+        let defaultOptText = type === "群組備註" ? "-- [新增群組] --" : "-- [新增同房] --";
+        existingSelect.innerHTML = `<option value="">${defaultOptText}</option>`; 
+        tags.forEach(t => { existingSelect.innerHTML += `<option value="${t}">${t}</option>`; });
+        
+        loadManagerTag(""); 
+        document.getElementById('manager-modal').classList.add('show');
+    }
+
+    function loadManagerTag(tagId) {
+        currentManagerOldTag = tagId; document.getElementById('manager-tag-id').value = tagId;
+        if(!tagId) document.getElementById('manager-tag-id').value = generateTagIdStr();
+        
+        managerLeaderNo = null;
+        tempSelectedNos.clear();
+
+        if (tagId && managerType === "群組備註") {
+            let leaderObj = window.currentGroupData.find(d => {
+                let tags = String(getVal(d, managerType)).split(',').map(t=>t.trim());
+                return tags.includes(tagId + "(L)");
+            });
+            if (leaderObj) managerLeaderNo = leaderObj.no;
+        }
+
+        window.currentGroupData.forEach(d => {
+            if(d.status === "已取消") return;
+            let currentTags = String(getVal(d, managerType)).split(',').map(t => t.trim().replace(/\(L\)$/, ''));
+            if(tagId && currentTags.includes(tagId)) {
+                tempSelectedNos.add(String(d.no));
+            }
+        });
+
+        document.getElementById('manager-search-input').value = "";
+        renderManagerLeftList();
+        renderManagerRightList();
+    }
+
+    function addMemberToTemp(no) {
+        tempSelectedNos.add(String(no));
+        renderManagerLeftList();
+        renderManagerRightList();
+    }
+
+    function removeMemberFromTemp(no) {
+        tempSelectedNos.delete(String(no));
+        if (managerLeaderNo == no) managerLeaderNo = null;
+        renderManagerLeftList();
+        renderManagerRightList();
+    }
+
+    function setManagerLeader(e, no) {
+        if(e) { e.preventDefault(); e.stopPropagation(); }
+        managerLeaderNo = (managerLeaderNo == no) ? null : no;
+        renderManagerLeftList();
+    }
+
+    function renderManagerLeftList() {
+        let container = document.getElementById('selected-chips-container');
+        if (tempSelectedNos.size === 0) {
+            container.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:30px 0;">尚無成員<br><br>請從右側清單點擊加入 ➔</div>';
+            return;
+        }
+
+        let selectedData = Array.from(tempSelectedNos).map(no => window.currentGroupData.find(d => String(d.no) === no)).filter(Boolean);
+        selectedData.sort((a,b) => a.no - b.no);
+
+        let html = "";
+        selectedData.forEach(d => {
+            let isL = (managerLeaderNo == d.no);
+            let crown = (managerType === "群組備註") ? `<span onclick="setManagerLeader(event, '${d.no}')" title="點擊設為群主" style="cursor:pointer; font-size:16px; margin-right:8px; filter:${isL?'grayscale(0)':'grayscale(1)'}; opacity:${isL?'1':'0.3'}; transition:0.2s;">👑</span>` : '';
+            
+            html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--white); border:1px solid ${isL?'var(--success)':'var(--border)'}; padding:8px 12px; margin-bottom:6px; border-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="display:flex; align-items:center;">
+                        ${crown}
+                        <div style="display:flex; flex-direction:column; line-height:1.2;">
+                            <span style="font-weight:700; color:var(--primary); font-size:13px;">${d.name}</span>
+                            <span style="font-size:10px; color:var(--text-light);">NO.${d.no} | ID: ${d.id||'--'}</span>
+                        </div>
+                    </div>
+                    <span style="color:var(--danger); cursor:pointer; font-size:20px; line-height:1; font-weight:bold; padding:0 5px;" onclick="removeMemberFromTemp('${d.no}')" title="移除此成員">&times;</span>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function renderManagerRightList() {
+        let container = document.getElementById('manager-available-list');
+        let kw = document.getElementById('manager-search-input').value.toLowerCase().trim();
+
+        let matches = window.currentGroupData.filter(d => {
+            if (d.status === "已取消" || tempSelectedNos.has(String(d.no))) return false;
+            if (kw) {
+                return String(d.name || "").toLowerCase().includes(kw) || String(d.id || "").toLowerCase().includes(kw);
+            }
+            return true;
+        });
+
+        if (matches.length > 0) {
+            container.innerHTML = matches.map(d => {
+                let curTags = String(getVal(d, managerType)).split(',').map(t=>t.trim().replace(/\(L\)$/, '')).filter(Boolean);
+                let tagHint = curTags.length > 0 ? `<span style="font-size:10px; color:var(--special); background:#FFF7ED; border:1px solid #FFEDD5; padding:2px 4px; border-radius:2px; margin-left:6px;">已於: ${curTags.join(', ')}</span>` : '';
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 15px; border-bottom:1px solid #F1F5F9; cursor:pointer; transition:0.2s;" onclick="addMemberToTemp('${d.no}')" onmouseover="this.style.background='#F0F9FF'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex; flex-direction:column; line-height:1.2;">
+                        <div style="display:flex; align-items:center;">
+                            <span style="font-weight:600; color:var(--text-main); font-size:13px;">${d.name}</span>
+                            ${tagHint}
+                        </div>
+                        <span style="font-size:10px; color:var(--text-light); margin-top:3px;">NO.${d.no} | ID: ${d.id||'--'}</span>
+                    </div>
+                    <span style="color:var(--accent); font-weight:700; font-size:18px;">+</span>
+                </div>`;
+            }).join('');
+        } else {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-light); font-size:12px;">無符合的旅客</div>';
+        }
+    }
+
+    function deleteCurrentGroup() {
+        if(!currentManagerOldTag) return customAlert("這是尚未建立的新代號，無法刪除。", "warning");
+        customConfirm(`確定要徹底刪除代號「${currentManagerOldTag}」嗎？\n所有成員的此標籤都會被清除！`, () => {
+            document.getElementById('manager-tag-id').value = ""; 
+            tempSelectedNos.clear(); 
+            submitManagerModal();
+        }, true);
+    }
+
+    function closeManagerModal() { document.getElementById('manager-modal').classList.remove('show'); }
+
+    function submitManagerModal() {
+        let newTagId = document.getElementById('manager-tag-id').value.trim();
+        let selectedNOs = []; let hasConflict = false;
+
+        if (managerType === "同房註記") {
+            tempSelectedNos.forEach(no => {
+                selectedNOs.push(no);
+                let curTags = window.currentGroupData.find(d => String(d.no) === no)?.roomGroup || "";
+                if (curTags && curTags !== newTagId && newTagId !== "") hasConflict = true; 
+            });
+            
+            if (newTagId === "" && selectedNOs.length === 0) { } 
+            else {
+                if (selectedNOs.length > 4) return customAlert("同房人數最多 2~4 人！", "warning");
+                let originalMembers = window.currentGroupData.filter(d => getVal(d, '同房註記') === currentManagerOldTag).map(d => String(d.no));
+                let isDecrease = false;
+                if (currentManagerOldTag !== "") {
+                    for(let o of originalMembers) { if(!selectedNOs.includes(o)) { isDecrease = true; break; } }
+                }
+
+                if (isDecrease) {
+                    customConfirm("同房人數減少，系統將自動解除該房所有旅客的同房關係！", () => {
+                        showLoading("SAVING CONFIG...");
+                        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'updateTags', type: managerType, oldTagId: currentManagerOldTag, newTagId: "", selectedNOs: [], voyage: document.getElementById('search-groupCode').value, operator: document.getElementById('current-username').innerText, memberDetails: "因同房人數減少，已自動解除所有人的同房關係" }) })
+                        .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
+                    }, true);
+                    return; 
+                }
+
+                if (selectedNOs.length === 1) return customAlert("同房人數不可只有 1 人，請選擇 2~4 人，或清空代號以徹底解除同房。", "warning");
+                if (selectedNOs.length > 1) {
+                    let roomTypes = new Set();
+                    selectedNOs.forEach(no => {
+                        let p = window.currentGroupData.find(d => String(d.no) === no);
+                        if(p && p.roomType) roomTypes.add(p.roomType);
+                    });
+                    if (roomTypes.size > 1) return customAlert("同房的旅客必須為「相同房型」！", "warning");
+                }
+            }
+        } else {
+            tempSelectedNos.forEach(no => selectedNOs.push(no));
+        }
+
+        if(!newTagId && selectedNOs.length > 0) return customAlert("您已選擇成員，請為他們輸入一組代號！\n若欲解除他們的狀態，請徹底刪除代號或清空代號欄位。", "warning");
+        
+        let logs = [];
+        selectedNOs.forEach(no => {
+            let p = window.currentGroupData.find(d => String(d.no) === no);
+            if(p) logs.push(`- NO.${p.no} 姓名: ${p.name} (ID: ${p.id||'--'})`);
+        });
+        let memberDetails = "成員異動名單如下:\n" + logs.join('\n');
+        if (managerType === "群組備註" && managerLeaderNo && newTagId) {
+            let leader = window.currentGroupData.find(d => String(d.no) === String(managerLeaderNo));
+            if(leader) memberDetails += `\n\n👑 指定群主: NO.${leader.no} ${leader.name}`;
+        }
+
+        let executeAction = () => {
+            showLoading("SAVING CONFIG...");
+            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'updateTags', type: managerType, oldTagId: currentManagerOldTag, newTagId: newTagId, selectedNOs: selectedNOs, leaderNo: managerLeaderNo, voyage: document.getElementById('search-groupCode').value, operator: document.getElementById('current-username').innerText, memberDetails: memberDetails }) })
+            .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
+        };
+        
+        if (hasConflict) customConfirm("選擇的名單中，有人已經具備其他的同房代號。\n確定要覆蓋並修改為新的同房代號嗎？", executeAction, true);
+        else executeAction();
+    }
+
+    function openCancelModal(no) { 
+        cancelTargetNo = no;
+        document.getElementById('cancel-reason').value = "";
+        document.getElementById('cancel-result').value = "";
+        document.getElementById('cancel-amount').value = "";
+        document.getElementById('cancel-amt-box').style.display = "none";
+        document.getElementById('cancel-modal').classList.add('show');
+    }
+    
+    function closeCancelModal() { document.getElementById('cancel-modal').classList.remove('show'); }
+
+    function confirmCancelOrder() {
+        let reason = document.getElementById('cancel-reason').value;
+        let resVal = document.getElementById('cancel-result').value;
+        let amt = document.getElementById('cancel-amount').value;
+        
+        if(!reason || !resVal) return customAlert("【取消理由】與【取消結果】皆為必填！", "warning");
+        if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
+        
+        showLoading("PROCESSING...");
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: amt }) })
+        .then(res => res.json()).then(res => { 
+            hideLoading(); 
+            if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } 
+            else customAlert("取消失敗：" + res.message, "error"); 
+        });
+    }
+
+    function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'restoreOrder', no: no, operator: document.getElementById('current-username').innerText }) }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
+
+    function renderLogsUI(data) {
+        const listBody = document.getElementById('logs-body');
+        listBody.innerHTML = "";
+        if(data.length === 0) { listBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px;">目前無任何操作紀錄</td></tr>'; return; }
+        
+        window.globalLogCache = data;
+        data.forEach((log, index) => {
+            const row = document.createElement('tr'); 
+            let rawDetails = String(log.details || ""); let summary = rawDetails.replace(/\n/g, ' ');
+            let detailHTML = `<td class="log-detail"><div class="log-row-container"><div class="log-summary" title="${summary}">${summary}</div><div class="log-detail-link" onclick="showLogDetailsCache(${index})">[查看明細]</div></div></td>`;
+            row.innerHTML = `<td class="log-time">${log.time}</td><td class="log-op">${log.operator}</td><td class="log-target">${log.target || '-'}</td><td class="log-action">${log.action}</td>${detailHTML}`;
+            listBody.appendChild(row);
+        });
+    }
+
+    function showLogDetailsCache(index) { showLogDetails(window.globalLogCache[index].details); }
+
+    function loadLogs(forceRefresh = false) {
+        if (!forceRefresh && !isLogsDirty && cachedLogs) { renderLogsUI(cachedLogs); return; }
+        document.getElementById('logs-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px; font-weight:bold; letter-spacing:0.1em; color:var(--primary);">SYNCING...</td></tr>';
+        fetch(gasURL + "?action=getLogs&t=" + new Date().getTime()).then(res => res.json()).then(res => { if(res.status === 'success') { cachedLogs = res.data; isLogsDirty = false; renderLogsUI(cachedLogs); } });
+    }
+</script>
+
+<script type="module">
+  // 引入 Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+  // 您提供的 Firebase 設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyAfpFTPlmB3SO7JeiB3rnXvLEcDIoiO9PU",
+    authDomain: "peace-boat-c4163.firebaseapp.com",
+    projectId: "peace-boat-c4163",
+    storageBucket: "peace-boat-c4163.firebasestorage.app",
+    messagingSenderId: "578563618486",
+    appId: "1:578563618486:web:493aa0a79bd3c4ceddd817",
+    measurementId: "G-61DSLS7RPR"
+  };
+
+  // 初始化 Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  /**
+   * 監聽登入狀態切換
+   * 取代原本手動控制 DOM 的 mockLogin 邏輯
+   */
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // 已登入：隱藏登入層，顯示主系統介面
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      
+      // 顯示使用者名稱 (取 Email 前綴)
+      const userName = user.email.split('@')[0];
+      document.getElementById('current-username').innerText = userName;
+    } else {
+      // 未登入：顯示登入層，隱藏主系統
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('main-app').style.display = 'none';
+    }
+  });
+
+  /**
+   * 執行 Firebase 登入
+   */
+  window.executeFirebaseLogin = function() {
+    const email = document.getElementById('login-email').value;
+    const pwd = document.getElementById('login-pwd').value;
+    const btn = document.getElementById('btn-signin');
+    
+    if(!email || !pwd) return customAlert("請輸入完整的帳號與密碼", "warning");
+
+    btn.innerText = "SIGN IN";
+    btn.disabled = true;
+
+    signInWithEmailAndPassword(auth, email, pwd)
+      .then((userCredential) => {
+        btn.innerText = "SIGN IN";
+        btn.disabled = false;
+        document.getElementById('login-pwd').value = ""; // 清空密碼安全
+      })
+      .catch((error) => {
+        btn.innerText = "SIGN IN";
+        btn.disabled = false;
+        customAlert("登入失敗：請檢查帳號密碼或網路狀態", "error");
+        console.error("Firebase Auth Error:", error.message);
+      });
+  };
+
+  /**
+   * 執行 Firebase 登出
+   */
+  window.executeFirebaseLogout = function() {
+    signOut(auth).then(() => {
+      // 登出成功，狀態監聽會自動處理畫面切換
+    }).catch((error) => {
+      customAlert("登出失敗", "error");
+    });
+  };
+</script>
+
+</body>
+</html>
