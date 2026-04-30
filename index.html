@@ -45,9 +45,18 @@
         .clear-btn:hover { color: var(--danger); }
 
         label { font-size: 11px; color: var(--text-light); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;}
-        input, select { padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; transition: 0.2s; background: #FFF; color: var(--text-main); height: 38px;}
-        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
-        input[readonly], select:disabled { background-color: var(--sys-bg); border-style: solid; color: var(--text-light); cursor: not-allowed; }
+        
+        /* 表單控制區輸入框統一設定 (從根本排除表格內的 td-input) */
+        input[type="text"]:not(.td-input), input[type="number"]:not(.td-input), input[type="email"]:not(.td-input), input[type="password"]:not(.td-input), select:not(.td-input) { 
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; transition: 0.2s; background: #FFF; color: var(--text-main); height: 38px; 
+        }
+        
+        input:not(.td-input):focus, select:not(.td-input):focus { 
+            outline: none; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); 
+        }
+        input:not(.td-input)[readonly], select:not(.td-input):disabled { 
+            background-color: var(--sys-bg); border-style: solid; color: var(--text-light); cursor: not-allowed; 
+        }
 
         #step-2-container { display: none; opacity: 0; transition: opacity 0.4s ease; margin-top: 40px; border-top: 1px dashed var(--border); padding-top: 30px;}
 
@@ -94,7 +103,15 @@
 
         .td-input { width: 100%; height: 28px; padding: 0 4px; font-size: 12px; border: 1px solid transparent; background: transparent; }
         .td-input:focus { border: 1px solid var(--accent); background: #FFF; box-shadow: none; }
-        .td-readonly { background: transparent; border: none; font-weight: bold; pointer-events: none; color: var(--primary);}
+        
+        /* 完美復原：明確給予清單內的唯讀欄位灰底與外框 */
+        .td-readonly { 
+            background-color: var(--sys-bg) !important; 
+            border: 1px solid var(--border) !important; 
+            font-weight: bold; 
+            pointer-events: none; 
+            color: var(--primary);
+        }
         
         .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50% !important; margin-right: 4px; vertical-align: middle; }
         .dot-normal { background-color: var(--success); } .dot-cancel { background-color: var(--danger); } .dot-waitlist { background-color: var(--waitlist); }
@@ -108,8 +125,8 @@
         tr.group-border-top > td { border-top: 2px solid var(--grp-color) !important; }
         tr.group-border-bottom > td { border-bottom: 2px solid var(--grp-color) !important; }
 
-        .room-bg-1 { background-color: #E8F4FD !important; }
-        .room-bg-2 { background-color: #FFF8E7 !important; }
+        .room-bg-1 { background-color: #FBF9F5 !important; } /* 晨透霜白 */
+        .room-bg-2 { background-color: #F1F3F5 !important; } /* 高級銀灰 */
         .normal-bg { background-color: var(--white) !important; }
         
         /* Logs 完美對齊與截斷設計 */
@@ -354,8 +371,10 @@
                 <div class="input-group" style="width:140px;">
                     <label>航程代碼</label>
                     <div class="input-wrapper">
-                        <input type="text" id="search-groupCode" list="groupOptions" placeholder="輸入代碼" onkeydown="if(event.key === 'Enter') searchList()">
-                        <span class="clear-btn" onclick="clearInput('search-groupCode')">&times;</span>
+                        <!-- 加大右邊的內距，避免打字被按鈕擋住 -->
+                        <input type="text" id="search-groupCode" list="groupOptions" placeholder="輸入代碼" onkeydown="if(event.key === 'Enter') searchList()" style="padding-right: 45px;">
+                        <!-- 把叉叉按鈕往左邊推一點，讓出空間給下拉箭頭 -->
+                        <span class="clear-btn" onclick="clearInput('search-groupCode')" style="right: 25px;">&times;</span>
                     </div>
                 </div>
                 <div class="input-group" style="width:140px;">
@@ -682,21 +701,20 @@
         let accRoom = Number(block.querySelector('.h-accRoom').value) || 0;
         let upgRoom = Number(block.querySelector('.h-upgRoom').value) || 0; let portFee = Number(block.querySelector('.h-portFee').value) || 0;
         let tips = Number(block.querySelector('.h-tips').value) || 0;
+        // 新增: 其他追加費用
+        let otherFee = Number(block.querySelector('.h-otherFee').value) || 0;
 
         const isInside = fullRoomType.includes("內艙");
         const commRate = isInside ? 0.18 : 0.15;
         block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
         
-        // 修正：基本旅費總價需扣除 JGD 與 AGTD
-        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips;
-        // 佣金計算基準
+        // 基本旅費總價需扣除 JGD 與 AGTD，並加上其他追加費用
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee;
         let commBase = sf - jgd - agtd; 
         block.querySelector('.calc-total').value = baseTotal;
-        // 佣金顯示正數
         let commission = Math.round(commBase * commRate);
         block.querySelector('.calc-comm').value = commission;
         
-        // 應付計算減去佣金
         let setPay = baseTotal - commission;
         
         let childRemark = block.querySelector('.p-child-remark') ? block.querySelector('.p-child-remark').value : "";
@@ -771,10 +789,10 @@
                 <div class="section-title" style="margin-top:0; margin-bottom:15px; border-left-color:var(--accent); color:var(--primary); font-size:12px;">▍ 費用即時計算區</div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>SF船費</label><input type="text" class="calc-sf" readonly></div>
-                    <div class="input-group"><label>港務費</label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>小費</label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>JG D</label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>AGT D</label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>港務費 (輸入)</label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>小費 (輸入)</label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>JG D (輸入)</label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>AGT D (輸入)</label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>下鋪A</label><input type="number" class="h-subA" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
@@ -783,9 +801,11 @@
                     <div class="input-group"><label>國際旅客稅</label><input type="number" class="h-intlTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>阿拉斯加稅</label><input type="number" class="h-alaskaTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
+                <!-- 修正: 加入 其他追加費用 -->
                 <div class="grid-5" style="margin-bottom: 20px;">
                     <div class="input-group"><label>無障礙房型</label><input type="number" class="h-accRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>房型升等</label><input type="number" class="h-upgRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>其他追加費用</label><input type="number" class="h-otherFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
                 <div class="cost-calc-grid grid-4">
                     <div class="input-group"><label>基本旅費總價</label><input type="text" class="calc-total" readonly style="font-weight:700; color:var(--primary);"></div>
@@ -823,6 +843,7 @@
                 specialReq: b.querySelector('.p-special-req').value, childRemark: b.querySelector('.p-child-remark').value, otherRemark: b.querySelector('.p-other-remark').value, promoExtras: b.querySelector('.p-promo-extras').value, couponDeposit: b.querySelector('.p-coupon-dep').value, couponVoucher: b.querySelector('.p-coupon-vou').value,
                 portFee: b.querySelector('.h-portFee').value, tips: b.querySelector('.h-tips').value, jgd: b.querySelector('.h-jgd').value, agtD: b.querySelector('.h-agtd').value,
                 subA: b.querySelector('.h-subA').value, subB: b.querySelector('.h-subB').value, toilet: b.querySelector('.h-toilet').value, intlTax: b.querySelector('.h-intlTax').value, visa: b.querySelector('.h-alaskaTax').value, accRoom: b.querySelector('.h-accRoom').value, upgRoom: b.querySelector('.h-upgRoom').value,
+                otherFee: b.querySelector('.h-otherFee').value, // 抓取其他追加費用
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
@@ -872,21 +893,18 @@
         let upgRoom = Number(tr.querySelector('.adv-input[data-col="房型升等"]')?.value) || 0; 
         let portFee = Number(tr.querySelector('.adv-input[data-col="港務費"]')?.value) || 0; 
         let tips = Number(tr.querySelector('.adv-input[data-col="小費"]')?.value) || 0;
+        let otherFee = Number(tr.querySelector('.adv-input[data-col="其他追加費用"]')?.value) || 0;
         let nameChangeAmt = Number(tr.querySelector('.edit-nameChange')?.value) || 0;
         
         let room = tr.querySelector('.edit-room').value || ""; let isInside = room.includes("內艙");
         let commRate = isInside ? 0.18 : 0.15; 
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
         
-        // 修正：基本旅費總價需扣除 JGD 與 AGTD
-        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips;
-        // 佣金計算基準
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee;
         let commBase = sf - jgd - agtd; 
         tr.querySelector('.edit-tot').value = baseTotal; 
-        // 佣金顯示正數
         let comm = Math.round(commBase * commRate); 
         tr.querySelector('.edit-comm').value = comm; 
-        // 應付減去佣金
         tr.querySelector('.edit-set').value = baseTotal - comm + nameChangeAmt;
     }
 
@@ -917,7 +935,7 @@
         const listBody = document.getElementById('list-body');
         const filterStatus = document.getElementById('status-filter').value; const filterName = document.getElementById('search-name').value.trim().toLowerCase();
         
-        let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等"];
+        let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用"];
         let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
         let headHtml = '<tr><th class="sticky-1">NO.</th><th style="width:160px;">特殊需求</th><th class="sticky-2">旅客姓名</th><th class="sticky-3">NAME</th>';
@@ -1101,7 +1119,7 @@
             advCols.forEach(c => { 
                 let extraAttr = ''; let extraClass = '';
                 if (c === "港務費" || c === "小費") { extraAttr = `type="number" readonly`; extraClass = ` td-readonly`; }
-                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
+                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
                 else { extraAttr = `type="text"`; }
                 html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${getVal(item, c)}" ${extraAttr}></td>`;
             });
