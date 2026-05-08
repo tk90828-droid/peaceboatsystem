@@ -875,7 +875,7 @@
             calcGridRow(no); 
             updatedCount++;
         });
-        customAlert(`驗證成功！已將畫面上 ${updatedCount} 位旅客的「${type}」更新為 ${fee}。\n\n⚠️ 請記得點擊右側的【批次儲存】按鈕，正式上傳至資料庫！`, "success");
+        customAlert(`驗證成功！已將畫面上 ${updatedCount} 位旅客的「${type}」更新為 ${fee}。\n\n⚠️ 請記得點擊右側的【修改儲存】按鈕，正式上傳至資料庫！`, "success");
     }
 
     function calcGridRow(no) {
@@ -955,7 +955,7 @@
             } else { headHtml += `<th class="adv-col" style="width:90px; color:var(--accent);">${c}</th>`; }
         });
         headHtml += '<th style="width:75px; border-left:2px solid var(--border); text-align:center;">同房管理</th>';
-        headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">批次儲存</button></th></tr>';
+        headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">修改儲存</button></th></tr>';
         document.getElementById('list-head').innerHTML = headHtml;
         listBody.innerHTML = "";
 
@@ -1173,7 +1173,7 @@
             btn.innerText = "已解除";
             btn.disabled = true; 
             btn.style.opacity = "0.5";
-            customAlert("已清空此人的同房代號，請點擊右上角【批次儲存更新】以寫入資料庫。", "success"); 
+            customAlert("已清空此人的同房代號，請點擊右上角【修改儲存更新】以寫入資料庫。", "success"); 
         }
     }
 
