@@ -7,15 +7,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg: #F5F7FA;
-            --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
+            --bg: #F5F7FA; --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
             --border: #CBD5E1; --sys-bg: #F8FAFC; --danger: #B91C1C; --success: #059669;
             --primary: #0A192F; --primary-light: #1E293B; --accent: #0EA5E9;
             --waitlist: #F59E0B; --special: #F97316;
         }
 
         * { box-sizing: border-box; border-radius: 0 !important; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg);
+               color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
         
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { width: 360px; padding: 50px; background: white; border: 1px solid var(--primary); box-shadow: 15px 15px 0 rgba(0,0,0,0.1); text-align: center; }
@@ -46,17 +46,12 @@
 
         label { font-size: 11px; color: var(--text-light); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;}
         
-        /* 表單控制區輸入框統一設定 (從根本排除表格內的 td-input) */
         input[type="text"]:not(.td-input), input[type="number"]:not(.td-input), input[type="email"]:not(.td-input), input[type="password"]:not(.td-input), select:not(.td-input) { 
-            width: 100%; padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; transition: 0.2s; background: #FFF; color: var(--text-main); height: 38px; 
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; transition: 0.2s; background: #FFF; color: var(--text-main); height: 38px;
         }
         
-        input:not(.td-input):focus, select:not(.td-input):focus { 
-            outline: none; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); 
-        }
-        input:not(.td-input)[readonly], select:not(.td-input):disabled { 
-            background-color: var(--sys-bg); border-style: solid; color: var(--text-light); cursor: not-allowed; 
-        }
+        input:not(.td-input):focus, select:not(.td-input):focus { outline: none; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+        input:not(.td-input)[readonly], select:not(.td-input):disabled { background-color: var(--sys-bg); border-style: solid; color: var(--text-light); cursor: not-allowed; }
 
         #step-2-container { display: none; opacity: 0; transition: opacity 0.4s ease; margin-top: 40px; border-top: 1px dashed var(--border); padding-top: 30px;}
 
@@ -87,7 +82,6 @@
         
         .search-bar { display: flex; gap: 15px; margin-bottom: 20px; background: var(--sys-bg); padding: 15px 20px; border: 1px solid var(--border); align-items: flex-end; flex-wrap:wrap;}
 
-        /* 表格區 */
         .table-wrapper { width: 100%; max-height: 65vh; overflow: auto; border: 1px solid var(--border); background: var(--white); }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; table-layout: fixed;}
         th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); border-right: 1px dashed var(--border); text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background-color: inherit; vertical-align:middle;}
@@ -103,15 +97,7 @@
 
         .td-input { width: 100%; height: 28px; padding: 0 4px; font-size: 12px; border: 1px solid transparent; background: transparent; }
         .td-input:focus { border: 1px solid var(--accent); background: #FFF; box-shadow: none; }
-        
-        /* 完美復原：明確給予清單內的唯讀欄位灰底與外框 */
-        .td-readonly { 
-            background-color: var(--sys-bg) !important; 
-            border: 1px solid var(--border) !important; 
-            font-weight: bold; 
-            pointer-events: none; 
-            color: var(--primary);
-        }
+        .td-readonly { background-color: var(--sys-bg) !important; border: 1px solid var(--border) !important; font-weight: bold; pointer-events: none; color: var(--primary); }
         
         .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50% !important; margin-right: 4px; vertical-align: middle; }
         .dot-normal { background-color: var(--success); } .dot-cancel { background-color: var(--danger); } .dot-waitlist { background-color: var(--waitlist); }
@@ -125,11 +111,10 @@
         tr.group-border-top > td { border-top: 2px solid var(--grp-color) !important; }
         tr.group-border-bottom > td { border-bottom: 2px solid var(--grp-color) !important; }
 
-        .room-bg-1 { background-color: #FBF9F5 !important; } /* 晨透霜白 */
-        .room-bg-2 { background-color: #F1F3F5 !important; } /* 高級銀灰 */
+        .room-bg-1 { background-color: #FBF9F5 !important; } 
+        .room-bg-2 { background-color: #F1F3F5 !important; } 
         .normal-bg { background-color: var(--white) !important; }
         
-        /* Logs 完美對齊與截斷設計 */
         #page-logs table { table-layout: fixed; width: 100%;}
         #page-logs table th, #page-logs table td { padding: 12px; border-right: none;}
         .log-time { width: 170px; color: var(--text-light); font-size: 12px; }
@@ -173,14 +158,34 @@
         .crown-icon.is-leader { display: inline-block; filter: grayscale(0); opacity: 1; transform: scale(1.2); }
         .current-tag-text { font-size: 10px; color: var(--text-light); margin-left: 8px; }
 
-        /* 隱藏細項的寬度與密集度 */
         #col-toggle-list label { padding: 4px 6px; font-size: 12px; border-bottom: none; border-radius: 4px !important; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;}
         #col-toggle-list label:hover { background: #F1F5F9; }
+        
+        /* Filter Popup Style */
+        .filter-icon { cursor: pointer; color: var(--accent); font-size: 10px; margin-left: 5px; opacity: 0.6; transition: 0.2s; }
+        .filter-icon:hover, .filter-icon.active { opacity: 1; transform: scale(1.2); }
     </style>
 </head>
 <body>
 
 <div id="global-tooltip"></div>
+
+<div id="col-filter-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9998;" onclick="closeColumnFilter()"></div>
+<div id="col-filter-popup" style="display:none; position:absolute; z-index:9999; background:var(--white); border:1px solid var(--primary); box-shadow:0 10px 20px rgba(0,0,0,0.1); width:300px; padding:15px; font-size:12px;">
+    <div style="font-weight:700; margin-bottom:10px; color:var(--primary); font-size:13px; text-transform:uppercase;" id="filter-col-title">Column</div>
+    <div style="cursor:pointer; padding:6px 10px; margin-bottom:4px; background:var(--sys-bg); border:1px solid var(--border); border-radius:4px;" onclick="applySort('asc')">🔼 A ~ Z 排序 (小到大)</div>
+    <div style="cursor:pointer; padding:6px 10px; margin-bottom:10px; background:var(--sys-bg); border:1px solid var(--border); border-radius:4px;" onclick="applySort('desc')">🔽 Z ~ A 排序 (大到小)</div>
+    <div style="border-top:1px dashed var(--border); margin-bottom:10px;"></div>
+    <label style="display:flex; align-items:center; gap:5px; margin-bottom:8px; cursor:pointer; font-weight:bold; color:var(--text-main);">
+        <input type="checkbox" id="filter-select-all" onchange="toggleAllFilters(this)"> 顯示全選
+    </label>
+    <div id="col-filter-list" style="max-height:160px; overflow-y:auto; margin-bottom:15px; display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); padding:8px; background:var(--sys-bg);">
+    </div>
+    <div style="display:flex; gap:8px;">
+        <button class="btn-update" style="flex:1; height:32px; background:var(--primary); color:white; border:none;" onclick="applyColFilter()">確認篩選</button>
+        <button class="btn-remove" style="flex:1; height:32px; border:1px solid var(--border);" onclick="clearColFilter()">清除條件</button>
+    </div>
+</div>
 
 <div id="loading-overlay" class="loading-overlay">
     <div class="spinner"></div><div id="loading-text" style="color: var(--primary); font-weight: 700; letter-spacing: 0.1em; font-size: 12px;">PROCESSING...</div>
@@ -327,6 +332,7 @@
         <button class="btn-login" id="btn-signin" onclick="executeFirebaseLogin()">SIGN IN</button>
     </div>
 </div>
+
 <div id="main-app">
     <div class="container">
         <header>
@@ -371,9 +377,7 @@
                 <div class="input-group" style="width:140px;">
                     <label>航程代碼</label>
                     <div class="input-wrapper">
-                        <!-- 加大右邊的內距，避免打字被按鈕擋住 -->
                         <input type="text" id="search-groupCode" list="groupOptions" placeholder="輸入代碼" onkeydown="if(event.key === 'Enter') searchList()" style="padding-right: 45px;">
-                        <!-- 把叉叉按鈕往左邊推一點，讓出空間給下拉箭頭 -->
                         <span class="clear-btn" onclick="clearInput('search-groupCode')" style="right: 25px;">&times;</span>
                     </div>
                 </div>
@@ -404,6 +408,13 @@
                     <button type="button" style="background:var(--white); border:1px solid var(--primary); color:var(--primary); height:38px;" onclick="openColToggleModal()">顯示/隱藏 細項費用</button>
                     <button type="button" style="background:var(--white); border:1px solid var(--success); color:var(--success); height:38px; padding:0 15px;" onclick="exportExcel()">匯出 EXCEL</button>
                 </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div id="list-stats" style="font-weight:700; color:var(--primary); font-size:14px; letter-spacing:0.05em; border-left:3px solid var(--accent); padding-left:10px;">
+                    請先搜尋航程以載入名單統計
+                </div>
+                <button class="btn-update" style="border-color:var(--text-light); color:var(--text-main); height:28px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序與篩選</button>
             </div>
 
             <div class="table-wrapper">
@@ -484,6 +495,11 @@
     let managerType = ""; let currentManagerOldTag = ""; let managerLeaderNo = null; let cancelTargetNo = null;
     let tempSelectedNos = new Set(); let hiddenCols = []; window.globalLogCache = [];
     window.voyageDefaults = {};
+    
+    // 全域 Filter 與 Sorting 狀態
+    let activeColFilters = {}; 
+    let activeColSort = null; 
+    let currentFilterCol = ""; 
 
     function clearInput(id) {
         const el = document.getElementById(id);
@@ -501,10 +517,7 @@
         modalCallback = options.callback || null; document.getElementById('custom-modal').classList.add('show');
     }
     function closeModal(isConfirm) { document.getElementById('custom-modal').classList.remove('show'); if (modalCallback && isConfirm) setTimeout(modalCallback, 200); modalCallback = null; }
-    function customAlert(msg, type = 'info') { let title = 'INFORMATION';
-        if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR';
-        if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg });
-    }
+    function customAlert(msg, type = 'info') { let title = 'INFORMATION'; if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR'; if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg }); }
     function customConfirm(msg, onConfirm, isDanger = false) { showCustomModal({ type: 'confirm', title: isDanger ? 'DANGEROUS ACTION' : 'PLEASE CONFIRM', msg: msg, callback: onConfirm }); }
     
     function customPrompt(title, msg, isPassword) {
@@ -532,8 +545,7 @@
     function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
     function showTagTooltip(e, contentHTML) { let tt = document.getElementById('global-tooltip'); tt.innerHTML = contentHTML; tt.style.display = 'block'; tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; }
     function hideTagTooltip() { document.getElementById('global-tooltip').style.display = 'none'; }
-    function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip');
-        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
+    function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip'); if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
 
     function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
     function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
@@ -564,7 +576,6 @@
         <option value="Friendly Inside-G3-內艙房">Friendly Inside-G3-(友好)內艙房</option>
         <option value="Friendly inside young-Y-內艙房">Friendly inside young-Y-(友好)內艙房</option>
     `;
-
     window.onload = function() {
         const statusEl = document.getElementById('system-status');
         const t = new Date().getTime();
@@ -671,7 +682,8 @@
     function autoCalcPrice(num) {
         const block = document.getElementById(`p-block-${num}`);
         if(!block) return;
-        const promoCode = block.querySelector('.p-promo').value.trim(); const groupCode = document.getElementById('global-groupCode').value.trim(); 
+        const promoCode = block.querySelector('.p-promo').value.trim(); 
+        const groupCode = document.getElementById('global-groupCode').value.trim(); 
         const fullRoomType = block.querySelector('.p-room').value.trim(); 
         
         let roomCode = fullRoomType;
@@ -693,28 +705,33 @@
             block.setAttribute('data-last-lookup', lookupKey);
         }
 
-        let sf = Number(block.querySelector('.calc-sf').value) || 0; let jgd = Number(block.querySelector('.h-jgd').value) || 0;
+        let sf = Number(block.querySelector('.calc-sf').value) || 0; 
+        let jgd = Number(block.querySelector('.h-jgd').value) || 0;
         let agtd = Number(block.querySelector('.h-agtd').value) || 0;
-        let subA = Number(block.querySelector('.h-subA').value) || 0; let subB = Number(block.querySelector('.h-subB').value) || 0;
+        let subA = Number(block.querySelector('.h-subA').value) || 0; 
+        let subB = Number(block.querySelector('.h-subB').value) || 0;
         let toilet = Number(block.querySelector('.h-toilet').value) || 0;
-        let intlTax = Number(block.querySelector('.h-intlTax').value) || 0; let visa = Number(block.querySelector('.h-alaskaTax').value) || 0;
+        let intlTax = Number(block.querySelector('.h-intlTax').value) || 0; 
+        let visa = Number(block.querySelector('.h-alaskaTax').value) || 0;
         let accRoom = Number(block.querySelector('.h-accRoom').value) || 0;
-        let upgRoom = Number(block.querySelector('.h-upgRoom').value) || 0; let portFee = Number(block.querySelector('.h-portFee').value) || 0;
+        let upgRoom = Number(block.querySelector('.h-upgRoom').value) || 0; 
+        let portFee = Number(block.querySelector('.h-portFee').value) || 0;
         let tips = Number(block.querySelector('.h-tips').value) || 0;
-        // 新增: 其他追加費用
         let otherFee = Number(block.querySelector('.h-otherFee').value) || 0;
+        let posterDiscount = Number(block.querySelector('.h-poster').value) || 0; // 新增海報志工折扣
 
         const isInside = fullRoomType.includes("內艙");
-        const commRate = isInside ? 0.18 : 0.15;
+        const isSS = /SS/i.test(groupCode); // 判斷是否為短航程
+        // 短航程鎖定 15%，否則看艙房
+        const commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
         block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
-        
-        // 基本旅費總價需扣除 JGD 與 AGTD，並加上其他追加費用
-        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee;
+
+        // 基本旅費總價需扣除海報志工折扣
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
         block.querySelector('.calc-total').value = baseTotal;
         let commission = Math.round(commBase * commRate);
         block.querySelector('.calc-comm').value = commission;
-        
         let setPay = baseTotal - commission;
         
         let childRemark = block.querySelector('.p-child-remark') ? block.querySelector('.p-child-remark').value : "";
@@ -725,7 +742,8 @@
     function addPassenger() {
         const p1PromoInput = document.querySelector('#p-block-1 .p-promo');
         let inheritedPromo = ""; let inheritedRoom = "";
-        if (passengerCount >= 1) { inheritedPromo = p1PromoInput ? p1PromoInput.value.trim() : getCurrentYYYYMM(); inheritedRoom = document.querySelector('#p-block-1 .p-room').value; }
+        if (passengerCount >= 1) { inheritedPromo = p1PromoInput ? p1PromoInput.value.trim() : getCurrentYYYYMM();
+        inheritedRoom = document.querySelector('#p-block-1 .p-room').value; }
         if (passengerCount >= 4) { customAlert("一筆訂單最多只能包含 4 位旅客！", "warning"); return; }
         
         passengerCount++; blockCounter++;
@@ -801,11 +819,11 @@
                     <div class="input-group"><label>國際旅客稅</label><input type="number" class="h-intlTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>阿拉斯加稅</label><input type="number" class="h-alaskaTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
-                <!-- 修正: 加入 其他追加費用 -->
                 <div class="grid-5" style="margin-bottom: 20px;">
                     <div class="input-group"><label>無障礙房型</label><input type="number" class="h-accRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>房型升等</label><input type="number" class="h-upgRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>其他追加費用</label><input type="number" class="h-otherFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">海報志工優惠折扣金</label><input type="number" class="h-poster" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
                 <div class="cost-calc-grid grid-4">
                     <div class="input-group"><label>基本旅費總價</label><input type="text" class="calc-total" readonly style="font-weight:700; color:var(--primary);"></div>
@@ -843,7 +861,7 @@
                 specialReq: b.querySelector('.p-special-req').value, childRemark: b.querySelector('.p-child-remark').value, otherRemark: b.querySelector('.p-other-remark').value, promoExtras: b.querySelector('.p-promo-extras').value, couponDeposit: b.querySelector('.p-coupon-dep').value, couponVoucher: b.querySelector('.p-coupon-vou').value,
                 portFee: b.querySelector('.h-portFee').value, tips: b.querySelector('.h-tips').value, jgd: b.querySelector('.h-jgd').value, agtD: b.querySelector('.h-agtd').value,
                 subA: b.querySelector('.h-subA').value, subB: b.querySelector('.h-subB').value, toilet: b.querySelector('.h-toilet').value, intlTax: b.querySelector('.h-intlTax').value, visa: b.querySelector('.h-alaskaTax').value, accRoom: b.querySelector('.h-accRoom').value, upgRoom: b.querySelector('.h-upgRoom').value,
-                otherFee: b.querySelector('.h-otherFee').value, // 抓取其他追加費用
+                otherFee: b.querySelector('.h-otherFee').value, posterDiscount: b.querySelector('.h-poster').value, // 新增海報志工折扣
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
@@ -860,6 +878,88 @@
         const t = new Date().getTime();
         fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("讀取失敗，請確認網路連線。", "error"); });
     }
+
+    // ----- 新增：次篩選 Filter & Sort 邏輯 -----
+    function openColumnFilter(e, colName) {
+        e.stopPropagation();
+        currentFilterCol = colName;
+        document.getElementById('filter-col-title').innerText = colName;
+        
+        let uniqueVals = new Set();
+        window.currentGroupData.forEach(item => {
+            let val = String(getFilterVal(item, colName) || "").trim();
+            uniqueVals.add(val);
+        });
+        
+        let listDiv = document.getElementById('col-filter-list');
+        listDiv.innerHTML = "";
+        
+        let allChecked = true;
+        Array.from(uniqueVals).sort((a,b) => a.localeCompare(b, 'zh-TW', {numeric:true})).forEach(val => {
+            let isChecked = true;
+            if (activeColFilters[colName] && !activeColFilters[colName].has(val)) {
+                isChecked = false;
+                allChecked = false;
+            }
+            let lbl = document.createElement('label');
+            lbl.style.display = "flex"; lbl.style.alignItems = "center"; lbl.style.gap = "6px"; lbl.style.cursor = "pointer"; lbl.style.marginBottom = "4px";
+            lbl.innerHTML = `<input type="checkbox" class="col-filter-cb" value="${val}" ${isChecked ? 'checked' : ''}> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${val === "" ? "(空白/未填寫)" : val}</span>`;
+            listDiv.appendChild(lbl);
+        });
+        
+        document.getElementById('filter-select-all').checked = allChecked;
+        
+        let popup = document.getElementById('col-filter-popup');
+        popup.style.display = 'block';
+        
+        let rect = e.target.getBoundingClientRect();
+        popup.style.left = rect.left + 'px';
+        popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+        
+        document.getElementById('col-filter-overlay').style.display = 'block';
+    }
+
+    function toggleAllFilters(chk) {
+        document.querySelectorAll('.col-filter-cb').forEach(cb => cb.checked = chk.checked);
+    }
+
+    function closeColumnFilter() {
+        document.getElementById('col-filter-popup').style.display = 'none';
+        document.getElementById('col-filter-overlay').style.display = 'none';
+    }
+
+    function applySort(dir) {
+        activeColSort = { col: currentFilterCol, dir: dir };
+        closeColumnFilter();
+        renderList();
+    }
+
+    function applyColFilter() {
+        let selected = [];
+        document.querySelectorAll('.col-filter-cb:checked').forEach(cb => selected.push(cb.value));
+        let allCount = document.querySelectorAll('.col-filter-cb').length;
+        
+        if (selected.length === allCount) {
+            delete activeColFilters[currentFilterCol];
+        } else {
+            activeColFilters[currentFilterCol] = new Set(selected);
+        }
+        closeColumnFilter();
+        renderList();
+    }
+
+    function clearColFilter() {
+        delete activeColFilters[currentFilterCol];
+        closeColumnFilter();
+        renderList();
+    }
+
+    function resetTableFilters() {
+        activeColFilters = {};
+        activeColSort = null;
+        renderList();
+    }
+    // ----- 結束：次篩選 邏輯 -----
 
     async function batchUpdateFee(type) {
         let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
@@ -894,17 +994,23 @@
         let portFee = Number(tr.querySelector('.adv-input[data-col="港務費"]')?.value) || 0; 
         let tips = Number(tr.querySelector('.adv-input[data-col="小費"]')?.value) || 0;
         let otherFee = Number(tr.querySelector('.adv-input[data-col="其他追加費用"]')?.value) || 0;
+        let posterDiscount = Number(tr.querySelector('.adv-input[data-col="海報志工優惠折扣金"]')?.value) || 0;
         let nameChangeAmt = Number(tr.querySelector('.edit-nameChange')?.value) || 0;
         
-        let room = tr.querySelector('.edit-room').value || ""; let isInside = room.includes("內艙");
-        let commRate = isInside ? 0.18 : 0.15; 
+        let room = tr.querySelector('.edit-room').value || "";
+        let groupCode = document.getElementById('search-groupCode').value.trim();
+        let isInside = room.includes("內艙");
+        let isSS = /SS/i.test(groupCode); // 判斷是否為短航程 SS
+        
+        let commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
         
-        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee;
+        // 費用加上負擔扣除海報志工優惠
+        let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
         tr.querySelector('.edit-tot').value = baseTotal; 
         let comm = Math.round(commBase * commRate); 
-        tr.querySelector('.edit-comm').value = comm; 
+        tr.querySelector('.edit-comm').value = comm;
         tr.querySelector('.edit-set').value = baseTotal - comm + nameChangeAmt;
     }
 
@@ -925,6 +1031,15 @@
 
     function getVal(item, colName) { const idx = window.currentGroupHeaders.indexOf(colName); return idx > -1 ? (item.raw[idx] !== undefined ? item.raw[idx] : "") : ""; }
 
+    function getFilterVal(item, col) {
+        if(col === "旅客姓名") return item.name || "";
+        if(col === "NAME") return item.ename || "";
+        if(col === "ID") return item.id || "";
+        if(col === "房型") return item.roomType || "";
+        if(col === "特殊需求") return getVal(item, "特殊需求") || "";
+        return getVal(item, col);
+    }
+
     function getCleanGroup(groupStr) {
         if (!groupStr) return "";
         let firstTag = String(groupStr).split(',')[0].trim();
@@ -934,11 +1049,20 @@
     function renderList() {
         const listBody = document.getElementById('list-body');
         const filterStatus = document.getElementById('status-filter').value; const filterName = document.getElementById('search-name').value.trim().toLowerCase();
+        const currentGroupCode = document.getElementById('search-groupCode').value || "未知";
         
-        let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用"];
+        let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金"];
         let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
-        let headHtml = '<tr><th class="sticky-1">NO.</th><th style="width:160px;">特殊需求</th><th class="sticky-2">旅客姓名</th><th class="sticky-3">NAME</th>';
+        // 需要加上自定義篩選的表頭
+        let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務"];
+
+        let headHtml = `<tr>
+            <th class="sticky-1">NO.</th>
+            <th style="width:160px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
+            <th class="sticky-2">旅客姓名 <span class="filter-icon" onclick="openColumnFilter(event, '旅客姓名')">▼</span></th>
+            <th class="sticky-3">NAME <span class="filter-icon" onclick="openColumnFilter(event, 'NAME')">▼</span></th>`;
+        
         targetCols.forEach(c => { 
             if(!["NO","特殊需求","旅客姓名","NAME","Status"].includes(c)) {
                 let w = "75px";
@@ -946,7 +1070,13 @@
                 if(c === "登船港" || c === "離船港" || c === "ID" || c === "訂編" || c === "業務") w = "90px";
                 if(c === "生日") w = "110px"; 
                 if(c === "基本旅費總價" || c === "SET應付" || c === "名義變更金額") w = "85px";
-                headHtml += `<th style="width:${w};">${c}</th>`;
+                
+                let displayC = c;
+                if (customFilterCols.includes(c)) {
+                    let activeCls = activeColFilters[c] ? 'active' : '';
+                    displayC = `${c} <span class="filter-icon ${activeCls}" onclick="openColumnFilter(event, '${c}')">▼</span>`;
+                }
+                headHtml += `<th style="width:${w};">${displayC}</th>`;
             }
         });
         advCols.forEach(c => { 
@@ -959,17 +1089,17 @@
         document.getElementById('list-head').innerHTML = headHtml;
         listBody.innerHTML = "";
 
-        if(!window.currentGroupData || window.currentGroupData.length === 0) { listBody.innerHTML = '<tr><td colspan="45" style="text-align:center; padding:50px;">此航程無資料</td></tr>'; return; }
+        if(!window.currentGroupData || window.currentGroupData.length === 0) { 
+            listBody.innerHTML = '<tr><td colspan="45" style="text-align:center; padding:50px;">此航程無資料</td></tr>'; 
+            document.getElementById('list-stats').innerText = "請先搜尋航程以載入名單統計";
+            return; 
+        }
 
         let filteredData = window.currentGroupData.filter(item => {
             let s = item.status || "";
-            if (filterStatus === "正常") {
-                if (s !== "正常" && s !== "") return false;
-            } else if (filterStatus === "已取消" && s !== "已取消") {
-                return false;
-            } else if (filterStatus === "候補" && s !== "候補") {
-                return false;
-            }
+            if (filterStatus === "正常") { if (s !== "正常" && s !== "") return false; } 
+            else if (filterStatus === "已取消" && s !== "已取消") { return false; } 
+            else if (filterStatus === "候補" && s !== "候補") { return false; }
             if (filterStatus === "群組" && !item.groupNote) return false;
             if (filterStatus === "同房" && !item.roomGroup) return false;
             if (filterStatus === "孩童") {
@@ -983,13 +1113,37 @@
                 let matchId = item.id && String(item.id).toLowerCase().includes(filterName);
                 if (!matchName && !matchEname && !matchId) return false;
             }
+
+            // 次篩選過濾 (Column Filtering)
+            for (let col in activeColFilters) {
+                let val = String(getFilterVal(item, col) || "").trim();
+                if (!activeColFilters[col].has(val)) return false;
+            }
+
             return true;
         });
+
+        // 更新左上角統計數據
+        let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
+        if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
+        if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
+        document.getElementById('list-stats').innerText = statsText;
+
         if(filteredData.length === 0) { listBody.innerHTML = `<tr><td colspan="45" style="text-align:center; padding:50px; color:var(--text-light);">沒有符合條件的名單</td></tr>`; return; }
 
         const roomCounts = {};
         filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
+        
         filteredData.sort((a, b) => {
+            // 如有套用「標題欄排序 (A~Z / Z~A)」，優先採用
+            if (activeColSort) {
+                let vA = String(getFilterVal(a, activeColSort.col) || "").trim();
+                let vB = String(getFilterVal(b, activeColSort.col) || "").trim();
+                let res = vA.localeCompare(vB, 'zh-TW', {numeric: true});
+                return activeColSort.dir === 'asc' ? res : -res;
+            }
+
+            // 預設排序邏輯
             let gA = getCleanGroup(a.groupNote); let gB = getCleanGroup(b.groupNote);
             let rA = String(a.roomGroup || '').trim(); let rB = String(b.roomGroup || '').trim();
             let sA = String(getVal(a, '特殊需求') || '').trim(); let sB = String(getVal(b, '特殊需求') || '').trim();
@@ -1014,20 +1168,16 @@
                 }
             }
 
-            let pA = String(getVal(a, "當月優惠價") || "");
-            let pB = String(getVal(b, "當月優惠價") || "");
+            let pA = String(getVal(a, "當月優惠價") || ""); let pB = String(getVal(b, "當月優惠價") || "");
             if (pA !== pB) return pA.localeCompare(pB);
 
-            let sA_src = String(getVal(a, "報名來源") || "");
-            let sB_src = String(getVal(b, "報名來源") || "");
+            let sA_src = String(getVal(a, "報名來源") || ""); let sB_src = String(getVal(b, "報名來源") || "");
             if (sA_src !== sB_src) return sA_src.localeCompare(sB_src);
 
-            let eA = String(getVal(a, "各種優惠價/船內特典") || "");
-            let eB = String(getVal(b, "各種優惠價/船內特典") || "");
+            let eA = String(getVal(a, "各種優惠價/船內特典") || ""); let eB = String(getVal(b, "各種優惠價/船內特典") || "");
             if (eA !== eB) return eA.localeCompare(eB);
 
-            let oA = String(getVal(a, "其他") || "");
-            let oB = String(getVal(b, "其他") || "");
+            let oA = String(getVal(a, "其他") || ""); let oB = String(getVal(b, "其他") || "");
             if (oA !== oB) return oA.localeCompare(oB);
             return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
         });
@@ -1043,6 +1193,7 @@
             if(d.roomGroup) { roomMap[d.roomGroup] = roomMap[d.roomGroup] || []; roomMap[d.roomGroup].push(d); } 
         });
         Object.keys(groupMap).forEach(k => { groupMap[k].sort((a,b) => { let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; if (aL !== bL) return bL - aL; return parseInt(a.no) - parseInt(b.no); }); });
+        
         const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null;
         let lastRoom = null;
 
@@ -1052,7 +1203,8 @@
             let isRoom = item.roomGroup && roomCounts[item.roomGroup] > 1;
             let borderClass = ""; let bgClass = "normal-bg";
 
-            if (isRoom) { if (item.roomGroup !== lastRoom) { if (lastRoom !== null) currentRoomBgIdx = 1 - currentRoomBgIdx; lastRoom = item.roomGroup; } bgClass = currentRoomBgIdx === 0 ? "room-bg-1" : "room-bg-2"; }
+            if (isRoom) { 
+                if (item.roomGroup !== lastRoom) { if (lastRoom !== null) currentRoomBgIdx = 1 - currentRoomBgIdx; lastRoom = item.roomGroup; } bgClass = currentRoomBgIdx === 0 ? "room-bg-1" : "room-bg-2"; }
             if (isGroup) {
                 let curGrp = getCleanGroup(item.groupNote);
                 if (curGrp !== lastGrp) { if (lastGrp !== null) currentGrpColorIdx = 1 - currentGrpColorIdx; borderClass += "group-border-top "; lastGrp = curGrp; }
@@ -1075,7 +1227,8 @@
                     tagHTML += `<span class="tag tag-group" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">群</span>`; 
                 });
             }
-            if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>'); tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
+            if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>');
+                tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
 
             let specialReq = getVal(item, '特殊需求');
             let specialReqHtml = '';
@@ -1119,7 +1272,7 @@
             advCols.forEach(c => { 
                 let extraAttr = ''; let extraClass = '';
                 if (c === "港務費" || c === "小費") { extraAttr = `type="number" readonly`; extraClass = ` td-readonly`; }
-                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
+                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
                 else { extraAttr = `type="text"`; }
                 html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${getVal(item, c)}" ${extraAttr}></td>`;
             });
@@ -1144,7 +1297,7 @@
         const list = document.getElementById('col-toggle-list');
         list.innerHTML = "";
         document.querySelectorAll('#list-head th:not(.sticky-1):not(.sticky-2):not(.sticky-3)').forEach((th, idx) => {
-            let text = th.innerText.replace(' ✎', '').trim();
+            let text = th.innerText.replace(' ✎', '').replace(' ▼', '').trim();
             if(text && !text.includes("同房管理") && !text.includes("操作")) {
                 let isChecked = hiddenCols.includes(idx + 3) ? "checked" : "";
                 list.innerHTML += `<label><input type="checkbox" class="col-toggle-cb" data-idx="${idx + 3}" ${isChecked}> ${text}</label>`;
@@ -1502,11 +1655,9 @@
 </script>
 
 <script type="module">
-  // 引入 Firebase SDK
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  // 您提供的 Firebase 設定
   const firebaseConfig = {
     apiKey: "AIzaSyAfpFTPlmB3SO7JeiB3rnXvLEcDIoiO9PU",
     authDomain: "peace-boat-c4163.firebaseapp.com",
@@ -1516,34 +1667,21 @@
     appId: "1:578563618486:web:493aa0a79bd3c4ceddd817",
     measurementId: "G-61DSLS7RPR"
   };
-
-  // 初始化 Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-
-  /**
-   * 監聽登入狀態切換
-   * 取代原本手動控制 DOM 的 mockLogin 邏輯
-   */
+  
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // 已登入：隱藏登入層，顯示主系統介面
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('main-app').style.display = 'block';
-      
-      // 顯示使用者名稱 (取 Email 前綴)
       const userName = user.email.split('@')[0];
       document.getElementById('current-username').innerText = userName;
     } else {
-      // 未登入：顯示登入層，隱藏主系統
       document.getElementById('login-overlay').style.display = 'flex';
       document.getElementById('main-app').style.display = 'none';
     }
   });
 
-  /**
-   * 執行 Firebase 登入
-   */
   window.executeFirebaseLogin = function() {
     const email = document.getElementById('login-email').value;
     const pwd = document.getElementById('login-pwd').value;
@@ -1558,7 +1696,7 @@
       .then((userCredential) => {
         btn.innerText = "SIGN IN";
         btn.disabled = false;
-        document.getElementById('login-pwd').value = ""; // 清空密碼安全
+        document.getElementById('login-pwd').value = "";
       })
       .catch((error) => {
         btn.innerText = "SIGN IN";
@@ -1568,17 +1706,11 @@
       });
   };
 
-  /**
-   * 執行 Firebase 登出
-   */
   window.executeFirebaseLogout = function() {
-    signOut(auth).then(() => {
-      // 登出成功，狀態監聽會自動處理畫面切換
-    }).catch((error) => {
+    signOut(auth).catch((error) => {
       customAlert("登出失敗", "error");
     });
   };
 </script>
-
 </body>
 </html>
