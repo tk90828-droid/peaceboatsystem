@@ -7,14 +7,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg: #F5F7FA; --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
+            --bg: #F5F7FA;
+            --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
             --border: #CBD5E1; --sys-bg: #F8FAFC; --danger: #B91C1C; --success: #059669;
             --primary: #0A192F; --primary-light: #1E293B; --accent: #0EA5E9;
             --waitlist: #F59E0B; --special: #F97316;
         }
 
         * { box-sizing: border-box; border-radius: 0 !important; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg);
+               color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
         
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { width: 360px; padding: 50px; background: white; border: 1px solid var(--primary); box-shadow: 15px 15px 0 rgba(0,0,0,0.1); text-align: center; }
@@ -163,7 +165,8 @@
         #page-add .h-jgd, 
         #page-add .h-agtd, 
         #page-add .h-poster {
-            color: var(--danger) !important; font-weight: 700;
+            color: var(--danger) !important;
+            font-weight: 700;
         }
         
         /* Filter Popup Style */
@@ -338,7 +341,10 @@
             <label>Password</label>
             <input type="password" id="login-pwd" placeholder="請輸入密碼" onkeydown="if(event.key === 'Enter') executeFirebaseLogin()">
         </div>
-        <button class="btn-login" id="btn-signin" onclick="executeFirebaseLogin()">SIGN IN</button>
+        <button class="btn-login" id="btn-signin" onclick="executeFirebaseLogin()" style="width: 100%;">SIGN IN</button>
+        <div style="margin-top: 15px;">
+            <a href="#" onclick="executeFirebaseResetPwd(); return false;" style="font-size: 11px; color: var(--text-light); text-decoration: underline;">忘記密碼？</a>
+        </div>
     </div>
 </div>
 
@@ -506,7 +512,7 @@
     let managerType = ""; let currentManagerOldTag = ""; let managerLeaderNo = null; let cancelTargetNo = null;
     let tempSelectedNos = new Set(); let hiddenCols = []; window.globalLogCache = [];
     window.voyageDefaults = {};
-    let activeColFilters = {}; 
+    let activeColFilters = {};
     let activeColSort = null;
     let currentFilterCol = ""; 
 
@@ -538,6 +544,7 @@
             document.getElementById('input-modal-msg').innerHTML = msg;
             let inputEl = document.getElementById('input-modal-value');
             inputEl.type = isPassword ? 'password' : 'text'; inputEl.value = ''; 
+           
             window._inputModalResolve = resolve;
             document.getElementById('input-modal').classList.add('show');
             setTimeout(() => inputEl.focus(), 100);
@@ -560,7 +567,8 @@
     }
     function hideTagTooltip() { document.getElementById('global-tooltip').style.display = 'none'; }
     function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip');
-        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
+        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } 
+    }
 
     function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
     function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
@@ -734,10 +742,9 @@
         let tips = Number(block.querySelector('.h-tips').value) || 0;
         let otherFee = Number(block.querySelector('.h-otherFee').value) || 0;
         let posterDiscount = Number(block.querySelector('.h-poster').value) || 0;
-
         const isInside = fullRoomType.includes("內艙");
         const isSS = /SS/i.test(groupCode);
-        const commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
+        const commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15);
         block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
         
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
@@ -857,13 +864,17 @@
 
     function toggleRoomSync(num) {
         const check = document.querySelector(`#p-block-${num} .sync-check`); const roomIdInput = document.querySelector(`#p-block-${num} .p-room-id`); const roomSelect = document.querySelector(`#p-block-${num} .p-room`);
-        if (check.checked) { roomIdInput.value = document.querySelector('#p-block-1 .p-room-id').value; roomSelect.value = document.querySelector('#p-block-1 .p-room').value; roomSelect.disabled = true; autoCalcPrice(num); } else { roomIdInput.value = generateRoomId(); roomSelect.disabled = false; }
+        if (check.checked) { roomIdInput.value = document.querySelector('#p-block-1 .p-room-id').value; roomSelect.value = document.querySelector('#p-block-1 .p-room').value;
+        roomSelect.disabled = true; autoCalcPrice(num); } else { roomIdInput.value = generateRoomId(); roomSelect.disabled = false; }
     }
     function toggleAdvanced(num) { const el = document.getElementById(`advanced-${num}`); el.style.display = (el.style.display === 'block') ? 'none' : 'block'; }
-    function removePassenger(num) { document.getElementById(`p-block-${num}`).remove(); passengerCount--; const titles = document.querySelectorAll('.p-title'); titles.forEach((title, index) => { title.innerText = `旅客 ${index + 1} ${index === 0 ? '(主聯絡人)' : '(同行者)'}`; }); }
+    function removePassenger(num) { document.getElementById(`p-block-${num}`).remove(); passengerCount--;
+        const titles = document.querySelectorAll('.p-title'); titles.forEach((title, index) => { title.innerText = `旅客 ${index + 1} ${index === 0 ? '(主聯絡人)' : '(同行者)'}`; });
+    }
 
     function submitOrder() {
-        const groupCode = document.getElementById('global-groupCode').value; const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
+        const groupCode = document.getElementById('global-groupCode').value;
+        const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
         document.querySelectorAll('.passenger-block').forEach(b => {
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
@@ -908,7 +919,8 @@
         });
         document.getElementById('filter-select-all').checked = allChecked;
         let popup = document.getElementById('col-filter-popup'); popup.style.display = 'block';
-        let rect = e.target.getBoundingClientRect(); popup.style.left = rect.left + 'px'; popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+        let rect = e.target.getBoundingClientRect(); popup.style.left = rect.left + 'px';
+        popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
         document.getElementById('col-filter-overlay').style.display = 'block';
     }
 
@@ -916,9 +928,11 @@
     function closeColumnFilter() { document.getElementById('col-filter-popup').style.display = 'none'; document.getElementById('col-filter-overlay').style.display = 'none'; }
     function applySort(dir) { activeColSort = { col: currentFilterCol, dir: dir }; closeColumnFilter(); renderList(); }
     function applyColFilter() {
-        let selected = []; document.querySelectorAll('.col-filter-cb:checked').forEach(cb => selected.push(cb.value));
+        let selected = [];
+        document.querySelectorAll('.col-filter-cb:checked').forEach(cb => selected.push(cb.value));
         let allCount = document.querySelectorAll('.col-filter-cb').length;
-        if (selected.length === allCount) { delete activeColFilters[currentFilterCol]; } else { activeColFilters[currentFilterCol] = new Set(selected); }
+        if (selected.length === allCount) { delete activeColFilters[currentFilterCol];
+        } else { activeColFilters[currentFilterCol] = new Set(selected); }
         closeColumnFilter(); renderList();
     }
     function clearColFilter() { delete activeColFilters[currentFilterCol]; closeColumnFilter(); renderList(); }
@@ -963,7 +977,6 @@
         let groupCode = document.getElementById('search-groupCode').value.trim();
         let isInside = room.includes("內艙");
         let isSS = /SS/i.test(groupCode);
-        
         let commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
@@ -1076,7 +1089,6 @@
             }
             return true;
         });
-
         let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
         if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
         if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
@@ -1180,7 +1192,7 @@
                 });
             }
             if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>');
-                tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
+            tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
 
             let specialReq = getVal(item, '特殊需求');
             let specialReqHtml = '';
@@ -1281,7 +1293,8 @@
         let tr = document.getElementById('row-' + no);
         if(tr) { 
             tr.querySelector('.edit-roomGroup').value = ""; 
-            btn.innerText = "已解除"; btn.disabled = true; btn.style.opacity = "0.5";
+            btn.innerText = "已解除";
+            btn.disabled = true; btn.style.opacity = "0.5";
             customAlert("已清空此人的同房代號，請點擊右上角【修改儲存更新】以寫入資料庫。", "success"); 
         }
     }
@@ -1388,7 +1401,6 @@
             let currentTags = String(getVal(d, managerType)).split(',').map(t => t.trim().replace(/\(L\)$/, ''));
             if(tagId && currentTags.includes(tagId)) { tempSelectedNos.add(String(d.no)); }
         });
-
         document.getElementById('manager-search-input').value = ""; renderManagerLeftList(); renderManagerRightList();
     }
 
@@ -1399,7 +1411,8 @@
     function renderManagerLeftList() {
         let container = document.getElementById('selected-chips-container');
         if (tempSelectedNos.size === 0) {
-            container.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:30px 0;">尚無成員<br><br>請從右側清單點擊加入 ➔</div>'; return;
+            container.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:30px 0;">尚無成員<br><br>請從右側清單點擊加入 ➔</div>';
+            return;
         }
         let selectedData = Array.from(tempSelectedNos).map(no => window.currentGroupData.find(d => String(d.no) === no)).filter(Boolean);
         selectedData.sort((a,b) => a.no - b.no);
@@ -1473,7 +1486,6 @@
                 let curTags = window.currentGroupData.find(d => String(d.no) === no)?.roomGroup || "";
                 if (curTags && curTags !== newTagId && newTagId !== "") hasConflict = true; 
             });
-            
             if (newTagId === "" && selectedNOs.length === 0) { } 
             else {
                 if (selectedNOs.length > 4) return customAlert("同房人數最多 2~4 人！", "warning");
@@ -1583,7 +1595,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  // 增加載入 sendPasswordResetEmail 模組
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  
   const firebaseConfig = {
     apiKey: "AIzaSyAfpFTPlmB3SO7JeiB3rnXvLEcDIoiO9PU",
     authDomain: "peace-boat-c4163.firebaseapp.com",
@@ -1593,6 +1607,7 @@
     appId: "1:578563618486:web:493aa0a79bd3c4ceddd817",
     measurementId: "G-61DSLS7RPR"
   };
+  
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   
@@ -1607,7 +1622,7 @@
       document.getElementById('main-app').style.display = 'none';
     }
   });
-
+  
   window.executeFirebaseLogin = function() {
     const email = document.getElementById('login-email').value;
     const pwd = document.getElementById('login-pwd').value;
@@ -1627,6 +1642,24 @@
         btn.disabled = false;
         customAlert("登入失敗：請檢查帳號密碼或網路狀態", "error");
         console.error("Firebase Auth Error:", error.message);
+      });
+  };
+
+  // 增加忘記密碼處理函式
+  window.executeFirebaseResetPwd = function() {
+    const email = document.getElementById('login-email').value.trim();
+    if(!email) {
+      return customAlert("請先於上方輸入您的 Email 帳號，再點擊忘記密碼。", "warning");
+    }
+
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        customAlert(`密碼重設信件已寄送至：\n${email}\n請前往收件匣並依照指示重設密碼。`, "success");
+      })
+      .catch((error) => {
+        let msg = "寄送失敗：請確認輸入的 Email 是否正確或已經過註冊。";
+        customAlert(msg, "error");
+        console.error("Firebase Reset Pwd Error:", error.message);
       });
   };
 
