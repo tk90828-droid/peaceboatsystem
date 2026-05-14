@@ -7,7 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg: #F5F7FA; --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
+            --bg: #F5F7FA;
+            --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
             --border: #CBD5E1; --sys-bg: #F8FAFC; --danger: #B91C1C; --success: #059669;
             --primary: #0A192F; --primary-light: #1E293B; --accent: #0EA5E9;
             --waitlist: #F59E0B; --special: #F97316;
@@ -164,8 +165,7 @@
         #page-add .h-jgd, 
         #page-add .h-agtd, 
         #page-add .h-poster {
-            color: var(--danger) !important;
-            font-weight: 700;
+            color: var(--danger) !important; font-weight: 700;
         }
         
         /* Filter Popup Style */
@@ -262,6 +262,10 @@
             <label>名義變更金額 (手填)</label>
             <input type="number" id="cancel-amount" placeholder="請輸入變更金額">
         </div>
+        <div class="input-group" style="text-align:left; margin-top:15px;">
+            <label>備註 (選填)</label>
+            <input type="text" id="cancel-remark" placeholder="請輸入取消備註">
+        </div>
         <div class="modal-actions" style="margin-top:25px;">
             <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="closeCancelModal()">返回</button>
             <button class="modal-btn modal-btn-confirm" style="background:var(--danger);" onclick="confirmCancelOrder()">確認取消</button>
@@ -320,7 +324,7 @@
 
         <div class="modal-actions" style="margin-top:20px;">
             <button class="modal-btn modal-btn-cancel" onclick="closeManagerModal()" style="display:block;">取消變更</button>
-            <button class="modal-btn modal-btn-confirm" onclick="submitManagerModal()"> 送出更新</button>
+            <button class="modal-btn modal-btn-confirm" onclick="submitManagerModal()">送出更新</button>
         </div>
     </div>
 </div>
@@ -482,7 +486,6 @@
         return str.replace(/-/g, '/');
     }
 
-    // 修正：透過先存入 res 變數並比對數值，避免無條件覆寫 input.value 干擾底層 IME 輸入緩衝造成重複字元
     function formatDateInput(input) {
         let v = input.value.replace(/\D/g, '');
         if (v.length > 8) v = v.slice(0, 8);
@@ -505,10 +508,8 @@
     let managerType = ""; let currentManagerOldTag = ""; let managerLeaderNo = null; let cancelTargetNo = null;
     let tempSelectedNos = new Set(); let hiddenCols = []; window.globalLogCache = [];
     window.voyageDefaults = {};
-    
-    // 全域 Filter 與 Sorting 狀態
     let activeColFilters = {}; 
-    let activeColSort = null; 
+    let activeColSort = null;
     let currentFilterCol = ""; 
 
     function clearInput(id) {
@@ -527,7 +528,10 @@
         modalCallback = options.callback || null; document.getElementById('custom-modal').classList.add('show');
     }
     function closeModal(isConfirm) { document.getElementById('custom-modal').classList.remove('show'); if (modalCallback && isConfirm) setTimeout(modalCallback, 200); modalCallback = null; }
-    function customAlert(msg, type = 'info') { let title = 'INFORMATION'; if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR'; if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg }); }
+    function customAlert(msg, type = 'info') { let title = 'INFORMATION';
+        if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR';
+        if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg });
+    }
     function customConfirm(msg, onConfirm, isDanger = false) { showCustomModal({ type: 'confirm', title: isDanger ? 'DANGEROUS ACTION' : 'PLEASE CONFIRM', msg: msg, callback: onConfirm }); }
     
     function customPrompt(title, msg, isPassword) {
@@ -553,9 +557,13 @@
 
     function showLoading(text = 'PROCESSING...') { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
     function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-    function showTagTooltip(e, contentHTML) { let tt = document.getElementById('global-tooltip'); tt.innerHTML = contentHTML; tt.style.display = 'block'; tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; }
+    function showTagTooltip(e, contentHTML) { let tt = document.getElementById('global-tooltip'); tt.innerHTML = contentHTML; tt.style.display = 'block';
+        tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px';
+    }
     function hideTagTooltip() { document.getElementById('global-tooltip').style.display = 'none'; }
-    function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip'); if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
+    function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip');
+        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } 
+    }
 
     function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
     function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
@@ -728,15 +736,13 @@
         let portFee = Number(block.querySelector('.h-portFee').value) || 0;
         let tips = Number(block.querySelector('.h-tips').value) || 0;
         let otherFee = Number(block.querySelector('.h-otherFee').value) || 0;
-        let posterDiscount = Number(block.querySelector('.h-poster').value) || 0; // 新增海報志工折扣
+        let posterDiscount = Number(block.querySelector('.h-poster').value) || 0;
 
         const isInside = fullRoomType.includes("內艙");
-        const isSS = /SS/i.test(groupCode); // 判斷是否為短航程
-        // 短航程鎖定 15%，否則看艙房
+        const isSS = /SS/i.test(groupCode);
         const commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
         block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
-
-        // 基本旅費總價需扣除海報志工折扣
+        
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
         block.querySelector('.calc-total').value = baseTotal;
@@ -817,10 +823,10 @@
                 <div class="section-title" style="margin-top:0; margin-bottom:15px; border-left-color:var(--accent); color:var(--primary); font-size:12px;">▍ 費用即時計算區</div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>SF船費</label><input type="text" class="calc-sf" readonly></div>
-                    <div class="input-group"><label>港務費 </label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>小費 </label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數) </label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數) </label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>港務費</label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>小費</label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數)</label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數)</label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>下鋪A</label><input type="number" class="h-subA" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
@@ -871,7 +877,7 @@
                 specialReq: b.querySelector('.p-special-req').value, childRemark: b.querySelector('.p-child-remark').value, otherRemark: b.querySelector('.p-other-remark').value, promoExtras: b.querySelector('.p-promo-extras').value, couponDeposit: b.querySelector('.p-coupon-dep').value, couponVoucher: b.querySelector('.p-coupon-vou').value,
                 portFee: b.querySelector('.h-portFee').value, tips: b.querySelector('.h-tips').value, jgd: b.querySelector('.h-jgd').value, agtD: b.querySelector('.h-agtd').value,
                 subA: b.querySelector('.h-subA').value, subB: b.querySelector('.h-subB').value, toilet: b.querySelector('.h-toilet').value, intlTax: b.querySelector('.h-intlTax').value, visa: b.querySelector('.h-alaskaTax').value, accRoom: b.querySelector('.h-accRoom').value, upgRoom: b.querySelector('.h-upgRoom').value,
-                otherFee: b.querySelector('.h-otherFee').value, posterDiscount: b.querySelector('.h-poster').value, // 新增海報志工折扣
+                otherFee: b.querySelector('.h-otherFee').value, posterDiscount: b.querySelector('.h-poster').value,
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
@@ -889,7 +895,6 @@
         fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("讀取失敗，請確認網路連線。", "error"); });
     }
 
-    // ----- 新增：次篩選 Filter & Sort 邏輯 -----
     function openColumnFilter(e, colName) {
         e.stopPropagation();
         currentFilterCol = colName;
@@ -900,7 +905,6 @@
             let val = String(getFilterVal(item, colName) || "").trim();
             uniqueVals.add(val);
         });
-        
         let listDiv = document.getElementById('col-filter-list');
         listDiv.innerHTML = "";
         
@@ -916,7 +920,6 @@
             lbl.innerHTML = `<input type="checkbox" class="col-filter-cb" value="${val}" ${isChecked ? 'checked' : ''}> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${val === "" ? "(空白/未填寫)" : val}</span>`;
             listDiv.appendChild(lbl);
         });
-        
         document.getElementById('filter-select-all').checked = allChecked;
         
         let popup = document.getElementById('col-filter-popup');
@@ -969,7 +972,6 @@
         activeColSort = null;
         renderList();
     }
-    // ----- 結束：次篩選 邏輯 -----
 
     async function batchUpdateFee(type) {
         let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
@@ -1006,16 +1008,13 @@
         let otherFee = Number(tr.querySelector('.adv-input[data-col="其他追加費用"]')?.value) || 0;
         let posterDiscount = Number(tr.querySelector('.adv-input[data-col="海報志工優惠折扣金"]')?.value) || 0;
         let nameChangeAmt = Number(tr.querySelector('.edit-nameChange')?.value) || 0;
-        
         let room = tr.querySelector('.edit-room').value || "";
         let groupCode = document.getElementById('search-groupCode').value.trim();
         let isInside = room.includes("內艙");
-        let isSS = /SS/i.test(groupCode); // 判斷是否為短航程 SS
+        let isSS = /SS/i.test(groupCode);
         
         let commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
-        
-        // 費用加上負擔扣除海報志工優惠
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
         tr.querySelector('.edit-tot').value = baseTotal; 
@@ -1060,19 +1059,15 @@
         const listBody = document.getElementById('list-body');
         const filterStatus = document.getElementById('status-filter').value; const filterName = document.getElementById('search-name').value.trim().toLowerCase();
         const currentGroupCode = document.getElementById('search-groupCode').value || "未知";
-        
         let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金"];
         let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
-        // 需要加上自定義篩選的表頭
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務"];
-
         let headHtml = `<tr>
             <th class="sticky-1">NO.</th>
             <th style="width:160px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
             <th class="sticky-2">旅客姓名 <span class="filter-icon" onclick="openColumnFilter(event, '旅客姓名')">▼</span></th>
             <th class="sticky-3">NAME <span class="filter-icon" onclick="openColumnFilter(event, 'NAME')">▼</span></th>`;
-        
         targetCols.forEach(c => { 
             if(!["NO","特殊需求","旅客姓名","NAME","Status"].includes(c)) {
                 let w = "75px";
@@ -1100,7 +1095,7 @@
         listBody.innerHTML = "";
 
         if(!window.currentGroupData || window.currentGroupData.length === 0) { 
-            listBody.innerHTML = '<tr><td colspan="45" style="text-align:center; padding:50px;">此航程無資料</td></tr>'; 
+            listBody.innerHTML = '<tr><td colspan="45" style="text-align:center; padding:50px;">此航程無資料</td></tr>';
             document.getElementById('list-stats').innerText = "請先搜尋航程以載入名單統計";
             return; 
         }
@@ -1124,7 +1119,6 @@
                 if (!matchName && !matchEname && !matchId) return false;
             }
 
-            // 次篩選過濾 (Column Filtering)
             for (let col in activeColFilters) {
                 let val = String(getFilterVal(item, col) || "").trim();
                 if (!activeColFilters[col].has(val)) return false;
@@ -1132,20 +1126,15 @@
 
             return true;
         });
-
-        // 更新左上角統計數據
         let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
         if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
         if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
         document.getElementById('list-stats').innerText = statsText;
-
         if(filteredData.length === 0) { listBody.innerHTML = `<tr><td colspan="45" style="text-align:center; padding:50px; color:var(--text-light);">沒有符合條件的名單</td></tr>`; return; }
 
         const roomCounts = {};
         filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
-        
         filteredData.sort((a, b) => {
-            // 如有套用「標題欄排序 (A~Z / Z~A)」，優先採用
             if (activeColSort) {
                 let vA = String(getFilterVal(a, activeColSort.col) || "").trim();
                 let vB = String(getFilterVal(b, activeColSort.col) || "").trim();
@@ -1153,7 +1142,6 @@
                 return activeColSort.dir === 'asc' ? res : -res;
             }
 
-            // 預設排序邏輯
             let gA = getCleanGroup(a.groupNote); let gB = getCleanGroup(b.groupNote);
             let rA = String(a.roomGroup || '').trim(); let rB = String(b.roomGroup || '').trim();
             let sA = String(getVal(a, '特殊需求') || '').trim(); let sB = String(getVal(b, '特殊需求') || '').trim();
@@ -1203,9 +1191,7 @@
             if(d.roomGroup) { roomMap[d.roomGroup] = roomMap[d.roomGroup] || []; roomMap[d.roomGroup].push(d); } 
         });
         Object.keys(groupMap).forEach(k => { groupMap[k].sort((a,b) => { let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; if (aL !== bL) return bL - aL; return parseInt(a.no) - parseInt(b.no); }); });
-        
-        const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null;
-        let lastRoom = null;
+        const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null; let lastRoom = null;
 
         filteredData.forEach((item, index) => {
             let tr = document.createElement('tr'); tr.id = `row-${item.no}`;
@@ -1238,7 +1224,7 @@
                 });
             }
             if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>');
-                tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
+            tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
 
             let specialReq = getVal(item, '特殊需求');
             let specialReqHtml = '';
@@ -1257,8 +1243,16 @@
             let html = `
                 <td class="sticky-1" style="background-color: inherit;">${item.no}</td>
                 <td><div style="display:flex; align-items:center;">${specialReqHtml}<input class="td-input req-val" style="flex:1; min-width:0;" value="${specialReq}"></div></td>
-                <td class="sticky-2" style="background-color: inherit; overflow:visible;"><span class="status-dot ${dotClass}"></span>${item.name}${tagHTML}</td>
-                <td class="sticky-3" style="background-color: inherit;" title="${item.ename}">${item.ename}</td>
+                <td class="sticky-2" style="background-color: inherit; overflow:visible;">
+                    <div style="display:flex; align-items:center;">
+                        <span class="status-dot ${dotClass}"></span>
+                        <input type="text" class="td-input edit-name" style="flex:1; min-width:0; font-weight:700; color:var(--primary);" value="${item.name}">
+                        ${tagHTML}
+                    </div>
+                </td>
+                <td class="sticky-3" style="background-color: inherit;" title="${item.ename}">
+                    <input type="text" class="td-input edit-ename" style="width:100%; text-transform:uppercase;" value="${item.ename}">
+                </td>
                 <td><input type="text" class="td-input edit-id" value="${item.id || ''}"></td>
                 <td><input type="text" class="td-input edit-birth" value="${fmtDate(getVal(item, "生日"))}"></td>
                 <td><input type="text" class="td-input edit-source" value="${getVal(item, "報名來源")}"></td>
@@ -1350,6 +1344,8 @@
             const check = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
             
             check(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
+            check(orig.name || '', tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
+            check(orig.ename || '', tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
             check(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
             check(fmtDate(getVal(orig, "生日")), tr.querySelector('.edit-birth').value, '生日', '生日');
             check(getVal(orig, "報名來源"), tr.querySelector('.edit-source').value, '報名來源', '報名來源');
@@ -1615,6 +1611,7 @@
         document.getElementById('cancel-reason').value = "";
         document.getElementById('cancel-result').value = "";
         document.getElementById('cancel-amount').value = "";
+        document.getElementById('cancel-remark').value = "";
         document.getElementById('cancel-amt-box').style.display = "none";
         document.getElementById('cancel-modal').classList.add('show');
     }
@@ -1625,17 +1622,18 @@
         let reason = document.getElementById('cancel-reason').value;
         let resVal = document.getElementById('cancel-result').value;
         let amt = document.getElementById('cancel-amount').value;
+        let remark = document.getElementById('cancel-remark').value.trim();
         
         if(!reason || !resVal) return customAlert("【取消理由】與【取消結果】皆為必填！", "warning");
         if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
         
         showLoading("PROCESSING...");
-        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: amt }) })
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: amt, remark: remark }) })
         .then(res => res.json()).then(res => { 
             hideLoading(); 
             if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } 
             else customAlert("取消失敗：" + res.message, "error"); 
-        });
+         });
     }
 
     function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'restoreOrder', no: no, operator: document.getElementById('current-username').innerText }) }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
@@ -1652,7 +1650,7 @@
             let detailHTML = `<td class="log-detail"><div class="log-row-container"><div class="log-summary" title="${summary}">${summary}</div><div class="log-detail-link" onclick="showLogDetailsCache(${index})">[查看明細]</div></div></td>`;
             row.innerHTML = `<td class="log-time">${log.time}</td><td class="log-op">${log.operator}</td><td class="log-target">${log.target || '-'}</td><td class="log-action">${log.action}</td>${detailHTML}`;
             listBody.appendChild(row);
-        });
+         });
     }
 
     function showLogDetailsCache(index) { showLogDetails(window.globalLogCache[index].details); }
@@ -1667,7 +1665,6 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-
   const firebaseConfig = {
     apiKey: "AIzaSyAfpFTPlmB3SO7JeiB3rnXvLEcDIoiO9PU",
     authDomain: "peace-boat-c4163.firebaseapp.com",
@@ -1691,17 +1688,14 @@
       document.getElementById('main-app').style.display = 'none';
     }
   });
-
   window.executeFirebaseLogin = function() {
     const email = document.getElementById('login-email').value;
     const pwd = document.getElementById('login-pwd').value;
     const btn = document.getElementById('btn-signin');
-    
     if(!email || !pwd) return customAlert("請輸入完整的帳號與密碼", "warning");
 
     btn.innerText = "SIGN IN";
     btn.disabled = true;
-
     signInWithEmailAndPassword(auth, email, pwd)
       .then((userCredential) => {
         btn.innerText = "SIGN IN";
