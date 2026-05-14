@@ -7,16 +7,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg: #F5F7FA;
-            --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
+            --bg: #F5F7FA; --white: #FFFFFF; --text-main: #0F172A; --text-light: #64748B;
             --border: #CBD5E1; --sys-bg: #F8FAFC; --danger: #B91C1C; --success: #059669;
             --primary: #0A192F; --primary-light: #1E293B; --accent: #0EA5E9;
             --waitlist: #F59E0B; --special: #F97316;
         }
 
         * { box-sizing: border-box; border-radius: 0 !important; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg);
-               color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, 'Heiti TC', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; letter-spacing: 0.03em; font-size: 13px; }
         
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { width: 360px; padding: 50px; background: white; border: 1px solid var(--primary); box-shadow: 15px 15px 0 rgba(0,0,0,0.1); text-align: center; }
@@ -92,8 +90,8 @@
         tbody tr:hover { filter: brightness(0.96); }
 
         .sticky-1 { position: sticky; left: 0; width: 45px; z-index: 10; font-weight: bold; text-align: center;}
-        .sticky-2 { position: sticky; left: 45px; width: 95px; z-index: 10; font-weight: 700; color: var(--primary);}
-        .sticky-3 { position: sticky; left: 140px; width: 100px; z-index: 10; border-right: 2px solid var(--border) !important;}
+        .sticky-2 { position: sticky; left: 45px; width: 160px; z-index: 10; font-weight: 700; color: var(--primary);}
+        .sticky-3 { position: sticky; left: 205px; width: 120px; z-index: 10; border-right: 2px solid var(--border) !important;}
         thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: #E2E8F0; }
 
         .td-input { width: 100%; height: 28px; padding: 0 4px; font-size: 12px; border: 1px solid transparent; background: transparent; }
@@ -262,9 +260,9 @@
             <label>名義變更金額 (手填)</label>
             <input type="number" id="cancel-amount" placeholder="請輸入變更金額">
         </div>
-        <div class="input-group" style="text-align:left; margin-top:15px;">
+        <div class="input-group" style="text-align:left; margin-top: 15px;">
             <label>備註 (選填)</label>
-            <input type="text" id="cancel-remark" placeholder="請輸入取消備註">
+            <input type="text" id="cancel-remark" placeholder="手動輸入取消相關備註">
         </div>
         <div class="modal-actions" style="margin-top:25px;">
             <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="closeCancelModal()">返回</button>
@@ -324,7 +322,7 @@
 
         <div class="modal-actions" style="margin-top:20px;">
             <button class="modal-btn modal-btn-cancel" onclick="closeManagerModal()" style="display:block;">取消變更</button>
-            <button class="modal-btn modal-btn-confirm" onclick="submitManagerModal()">送出更新</button>
+            <button class="modal-btn modal-btn-confirm" onclick="submitManagerModal()"> 送出更新</button>
         </div>
     </div>
 </div>
@@ -562,8 +560,7 @@
     }
     function hideTagTooltip() { document.getElementById('global-tooltip').style.display = 'none'; }
     function moveTagTooltip(e) { let tt = document.getElementById('global-tooltip');
-        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } 
-    }
+        if(tt.style.display === 'block') { tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px'; } }
 
     function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
     function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
@@ -823,10 +820,10 @@
                 <div class="section-title" style="margin-top:0; margin-bottom:15px; border-left-color:var(--accent); color:var(--primary); font-size:12px;">▍ 費用即時計算區</div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>SF船費</label><input type="text" class="calc-sf" readonly></div>
-                    <div class="input-group"><label>港務費</label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>小費</label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數)</label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數)</label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>港務費 </label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>小費 </label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數) </label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數) </label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 10px;">
                     <div class="input-group"><label>下鋪A</label><input type="number" class="h-subA" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
@@ -866,8 +863,7 @@
     function removePassenger(num) { document.getElementById(`p-block-${num}`).remove(); passengerCount--; const titles = document.querySelectorAll('.p-title'); titles.forEach((title, index) => { title.innerText = `旅客 ${index + 1} ${index === 0 ? '(主聯絡人)' : '(同行者)'}`; }); }
 
     function submitOrder() {
-        const groupCode = document.getElementById('global-groupCode').value;
-        const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
+        const groupCode = document.getElementById('global-groupCode').value; const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
         document.querySelectorAll('.passenger-block').forEach(b => {
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
@@ -896,82 +892,37 @@
     }
 
     function openColumnFilter(e, colName) {
-        e.stopPropagation();
-        currentFilterCol = colName;
+        e.stopPropagation(); currentFilterCol = colName;
         document.getElementById('filter-col-title').innerText = colName;
-        
         let uniqueVals = new Set();
-        window.currentGroupData.forEach(item => {
-            let val = String(getFilterVal(item, colName) || "").trim();
-            uniqueVals.add(val);
-        });
-        let listDiv = document.getElementById('col-filter-list');
-        listDiv.innerHTML = "";
-        
+        window.currentGroupData.forEach(item => { let val = String(getFilterVal(item, colName) || "").trim(); uniqueVals.add(val); });
+        let listDiv = document.getElementById('col-filter-list'); listDiv.innerHTML = "";
         let allChecked = true;
         Array.from(uniqueVals).sort((a,b) => a.localeCompare(b, 'zh-TW', {numeric:true})).forEach(val => {
             let isChecked = true;
-            if (activeColFilters[colName] && !activeColFilters[colName].has(val)) {
-                isChecked = false;
-                allChecked = false;
-            }
+            if (activeColFilters[colName] && !activeColFilters[colName].has(val)) { isChecked = false; allChecked = false; }
             let lbl = document.createElement('label');
             lbl.style.display = "flex"; lbl.style.alignItems = "center"; lbl.style.gap = "6px"; lbl.style.cursor = "pointer"; lbl.style.marginBottom = "4px";
             lbl.innerHTML = `<input type="checkbox" class="col-filter-cb" value="${val}" ${isChecked ? 'checked' : ''}> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${val === "" ? "(空白/未填寫)" : val}</span>`;
             listDiv.appendChild(lbl);
         });
         document.getElementById('filter-select-all').checked = allChecked;
-        
-        let popup = document.getElementById('col-filter-popup');
-        popup.style.display = 'block';
-        
-        let rect = e.target.getBoundingClientRect();
-        popup.style.left = rect.left + 'px';
-        popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
-        
+        let popup = document.getElementById('col-filter-popup'); popup.style.display = 'block';
+        let rect = e.target.getBoundingClientRect(); popup.style.left = rect.left + 'px'; popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
         document.getElementById('col-filter-overlay').style.display = 'block';
     }
 
-    function toggleAllFilters(chk) {
-        document.querySelectorAll('.col-filter-cb').forEach(cb => cb.checked = chk.checked);
-    }
-
-    function closeColumnFilter() {
-        document.getElementById('col-filter-popup').style.display = 'none';
-        document.getElementById('col-filter-overlay').style.display = 'none';
-    }
-
-    function applySort(dir) {
-        activeColSort = { col: currentFilterCol, dir: dir };
-        closeColumnFilter();
-        renderList();
-    }
-
+    function toggleAllFilters(chk) { document.querySelectorAll('.col-filter-cb').forEach(cb => cb.checked = chk.checked); }
+    function closeColumnFilter() { document.getElementById('col-filter-popup').style.display = 'none'; document.getElementById('col-filter-overlay').style.display = 'none'; }
+    function applySort(dir) { activeColSort = { col: currentFilterCol, dir: dir }; closeColumnFilter(); renderList(); }
     function applyColFilter() {
-        let selected = [];
-        document.querySelectorAll('.col-filter-cb:checked').forEach(cb => selected.push(cb.value));
+        let selected = []; document.querySelectorAll('.col-filter-cb:checked').forEach(cb => selected.push(cb.value));
         let allCount = document.querySelectorAll('.col-filter-cb').length;
-        
-        if (selected.length === allCount) {
-            delete activeColFilters[currentFilterCol];
-        } else {
-            activeColFilters[currentFilterCol] = new Set(selected);
-        }
-        closeColumnFilter();
-        renderList();
+        if (selected.length === allCount) { delete activeColFilters[currentFilterCol]; } else { activeColFilters[currentFilterCol] = new Set(selected); }
+        closeColumnFilter(); renderList();
     }
-
-    function clearColFilter() {
-        delete activeColFilters[currentFilterCol];
-        closeColumnFilter();
-        renderList();
-    }
-
-    function resetTableFilters() {
-        activeColFilters = {};
-        activeColSort = null;
-        renderList();
-    }
+    function clearColFilter() { delete activeColFilters[currentFilterCol]; closeColumnFilter(); renderList(); }
+    function resetTableFilters() { activeColFilters = {}; activeColSort = null; renderList(); }
 
     async function batchUpdateFee(type) {
         let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
@@ -1123,9 +1074,9 @@
                 let val = String(getFilterVal(item, col) || "").trim();
                 if (!activeColFilters[col].has(val)) return false;
             }
-
             return true;
         });
+
         let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
         if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
         if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
@@ -1166,16 +1117,20 @@
                 }
             }
 
-            let pA = String(getVal(a, "當月優惠價") || ""); let pB = String(getVal(b, "當月優惠價") || "");
+            let pA = String(getVal(a, "當月優惠價") || "");
+            let pB = String(getVal(b, "當月優惠價") || "");
             if (pA !== pB) return pA.localeCompare(pB);
 
-            let sA_src = String(getVal(a, "報名來源") || ""); let sB_src = String(getVal(b, "報名來源") || "");
+            let sA_src = String(getVal(a, "報名來源") || "");
+            let sB_src = String(getVal(b, "報名來源") || "");
             if (sA_src !== sB_src) return sA_src.localeCompare(sB_src);
 
-            let eA = String(getVal(a, "各種優惠價/船內特典") || ""); let eB = String(getVal(b, "各種優惠價/船內特典") || "");
+            let eA = String(getVal(a, "各種優惠價/船內特典") || "");
+            let eB = String(getVal(b, "各種優惠價/船內特典") || "");
             if (eA !== eB) return eA.localeCompare(eB);
 
-            let oA = String(getVal(a, "其他") || ""); let oB = String(getVal(b, "其他") || "");
+            let oA = String(getVal(a, "其他") || "");
+            let oB = String(getVal(b, "其他") || "");
             if (oA !== oB) return oA.localeCompare(oB);
             return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
         });
@@ -1191,7 +1146,8 @@
             if(d.roomGroup) { roomMap[d.roomGroup] = roomMap[d.roomGroup] || []; roomMap[d.roomGroup].push(d); } 
         });
         Object.keys(groupMap).forEach(k => { groupMap[k].sort((a,b) => { let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; if (aL !== bL) return bL - aL; return parseInt(a.no) - parseInt(b.no); }); });
-        const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null; let lastRoom = null;
+        const groupColors = ["#111827", "#0284C7"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null;
+        let lastRoom = null;
 
         filteredData.forEach((item, index) => {
             let tr = document.createElement('tr'); tr.id = `row-${item.no}`;
@@ -1224,7 +1180,7 @@
                 });
             }
             if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>');
-            tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
+                tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
 
             let specialReq = getVal(item, '特殊需求');
             let specialReqHtml = '';
@@ -1243,16 +1199,18 @@
             let html = `
                 <td class="sticky-1" style="background-color: inherit;">${item.no}</td>
                 <td><div style="display:flex; align-items:center;">${specialReqHtml}<input class="td-input req-val" style="flex:1; min-width:0;" value="${specialReq}"></div></td>
+                
                 <td class="sticky-2" style="background-color: inherit; overflow:visible;">
-                    <div style="display:flex; align-items:center;">
+                    <div style="display:flex; align-items:center; width:100%;">
                         <span class="status-dot ${dotClass}"></span>
-                        <input type="text" class="td-input edit-name" style="flex:1; min-width:0; font-weight:700; color:var(--primary);" value="${item.name}">
+                        <input type="text" class="td-input edit-name" value="${item.name}" style="flex:1; min-width:60px; font-weight:bold; color:inherit;">
                         ${tagHTML}
                     </div>
                 </td>
-                <td class="sticky-3" style="background-color: inherit;" title="${item.ename}">
-                    <input type="text" class="td-input edit-ename" style="width:100%; text-transform:uppercase;" value="${item.ename}">
+                <td class="sticky-3" style="background-color: inherit;">
+                    <input type="text" class="td-input edit-ename" value="${item.ename}" style="text-transform:uppercase;">
                 </td>
+
                 <td><input type="text" class="td-input edit-id" value="${item.id || ''}"></td>
                 <td><input type="text" class="td-input edit-birth" value="${fmtDate(getVal(item, "生日"))}"></td>
                 <td><input type="text" class="td-input edit-source" value="${getVal(item, "報名來源")}"></td>
@@ -1317,19 +1275,13 @@
         });
         document.getElementById('col-toggle-modal').classList.remove('show');
     }
-    function resetColToggle() { 
-        document.querySelectorAll('.col-toggle-cb').forEach(cb => cb.checked = false);
-        hiddenCols = []; 
-        applyColToggle(); 
-    }
+    function resetColToggle() { document.querySelectorAll('.col-toggle-cb').forEach(cb => cb.checked = false); hiddenCols = []; applyColToggle(); }
 
     function cancelRoomingLocally(no, btn) {
         let tr = document.getElementById('row-' + no);
         if(tr) { 
             tr.querySelector('.edit-roomGroup').value = ""; 
-            btn.innerText = "已解除";
-            btn.disabled = true; 
-            btn.style.opacity = "0.5";
+            btn.innerText = "已解除"; btn.disabled = true; btn.style.opacity = "0.5";
             customAlert("已清空此人的同房代號，請點擊右上角【修改儲存更新】以寫入資料庫。", "success"); 
         }
     }
@@ -1344,8 +1296,8 @@
             const check = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
             
             check(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
-            check(orig.name || '', tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
-            check(orig.ename || '', tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
+            check(getVal(orig, "旅客姓名"), tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
+            check(getVal(orig, "NAME"), tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
             check(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
             check(fmtDate(getVal(orig, "生日")), tr.querySelector('.edit-birth').value, '生日', '生日');
             check(getVal(orig, "報名來源"), tr.querySelector('.edit-source').value, '報名來源', '報名來源');
@@ -1379,8 +1331,7 @@
 
     function exportExcel() {
         if(!window.currentGroupData || window.currentGroupData.length === 0) return customAlert("無資料可匯出！", "warning");
-        let exportData = []; 
-        exportData.push(window.currentGroupHeaders);
+        let exportData = []; exportData.push(window.currentGroupHeaders);
         let bIdx = window.currentGroupHeaders.indexOf("生日");
 
         window.currentGroupData.forEach(item => { 
@@ -1422,8 +1373,7 @@
         currentManagerOldTag = tagId; document.getElementById('manager-tag-id').value = tagId;
         if(!tagId) document.getElementById('manager-tag-id').value = generateTagIdStr();
         
-        managerLeaderNo = null;
-        tempSelectedNos.clear();
+        managerLeaderNo = null; tempSelectedNos.clear();
 
         if (tagId && managerType === "群組備註") {
             let leaderObj = window.currentGroupData.find(d => {
@@ -1436,42 +1386,21 @@
         window.currentGroupData.forEach(d => {
             if(d.status === "已取消") return;
             let currentTags = String(getVal(d, managerType)).split(',').map(t => t.trim().replace(/\(L\)$/, ''));
-            if(tagId && currentTags.includes(tagId)) {
-                tempSelectedNos.add(String(d.no));
-            }
+            if(tagId && currentTags.includes(tagId)) { tempSelectedNos.add(String(d.no)); }
         });
 
-        document.getElementById('manager-search-input').value = "";
-        renderManagerLeftList();
-        renderManagerRightList();
+        document.getElementById('manager-search-input').value = ""; renderManagerLeftList(); renderManagerRightList();
     }
 
-    function addMemberToTemp(no) {
-        tempSelectedNos.add(String(no));
-        renderManagerLeftList();
-        renderManagerRightList();
-    }
-
-    function removeMemberFromTemp(no) {
-        tempSelectedNos.delete(String(no));
-        if (managerLeaderNo == no) managerLeaderNo = null;
-        renderManagerLeftList();
-        renderManagerRightList();
-    }
-
-    function setManagerLeader(e, no) {
-        if(e) { e.preventDefault(); e.stopPropagation(); }
-        managerLeaderNo = (managerLeaderNo == no) ? null : no;
-        renderManagerLeftList();
-    }
+    function addMemberToTemp(no) { tempSelectedNos.add(String(no)); renderManagerLeftList(); renderManagerRightList(); }
+    function removeMemberFromTemp(no) { tempSelectedNos.delete(String(no)); if (managerLeaderNo == no) managerLeaderNo = null; renderManagerLeftList(); renderManagerRightList(); }
+    function setManagerLeader(e, no) { if(e) { e.preventDefault(); e.stopPropagation(); } managerLeaderNo = (managerLeaderNo == no) ? null : no; renderManagerLeftList(); }
 
     function renderManagerLeftList() {
         let container = document.getElementById('selected-chips-container');
         if (tempSelectedNos.size === 0) {
-            container.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:30px 0;">尚無成員<br><br>請從右側清單點擊加入 ➔</div>';
-            return;
+            container.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:30px 0;">尚無成員<br><br>請從右側清單點擊加入 ➔</div>'; return;
         }
-
         let selectedData = Array.from(tempSelectedNos).map(no => window.currentGroupData.find(d => String(d.no) === no)).filter(Boolean);
         selectedData.sort((a,b) => a.no - b.no);
 
@@ -1502,9 +1431,7 @@
 
         let matches = window.currentGroupData.filter(d => {
             if (d.status === "已取消" || tempSelectedNos.has(String(d.no))) return false;
-            if (kw) {
-                return String(d.name || "").toLowerCase().includes(kw) || String(d.id || "").toLowerCase().includes(kw);
-            }
+            if (kw) { return String(d.name || "").toLowerCase().includes(kw) || String(d.id || "").toLowerCase().includes(kw); }
             return true;
         });
 
@@ -1524,17 +1451,13 @@
                     <span style="color:var(--accent); font-weight:700; font-size:18px;">+</span>
                 </div>`;
             }).join('');
-        } else {
-            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-light); font-size:12px;">無符合的旅客</div>';
-        }
+        } else { container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-light); font-size:12px;">無符合的旅客</div>'; }
     }
 
     function deleteCurrentGroup() {
         if(!currentManagerOldTag) return customAlert("這是尚未建立的新代號，無法刪除。", "warning");
         customConfirm(`確定要徹底刪除代號「${currentManagerOldTag}」嗎？\n所有成員的此標籤都會被清除！`, () => {
-            document.getElementById('manager-tag-id').value = ""; 
-            tempSelectedNos.clear(); 
-            submitManagerModal();
+            document.getElementById('manager-tag-id').value = ""; tempSelectedNos.clear(); submitManagerModal();
         }, true);
     }
 
@@ -1556,9 +1479,7 @@
                 if (selectedNOs.length > 4) return customAlert("同房人數最多 2~4 人！", "warning");
                 let originalMembers = window.currentGroupData.filter(d => getVal(d, '同房註記') === currentManagerOldTag).map(d => String(d.no));
                 let isDecrease = false;
-                if (currentManagerOldTag !== "") {
-                    for(let o of originalMembers) { if(!selectedNOs.includes(o)) { isDecrease = true; break; } }
-                }
+                if (currentManagerOldTag !== "") { for(let o of originalMembers) { if(!selectedNOs.includes(o)) { isDecrease = true; break; } } }
 
                 if (isDecrease) {
                     customConfirm("同房人數減少，系統將自動解除該房所有旅客的同房關係！", () => {
@@ -1579,9 +1500,7 @@
                     if (roomTypes.size > 1) return customAlert("同房的旅客必須為「相同房型」！", "warning");
                 }
             }
-        } else {
-            tempSelectedNos.forEach(no => selectedNOs.push(no));
-        }
+        } else { tempSelectedNos.forEach(no => selectedNOs.push(no)); }
 
         if(!newTagId && selectedNOs.length > 0) return customAlert("您已選擇成員，請為他們輸入一組代號！\n若欲解除他們的狀態，請徹底刪除代號或清空代號欄位。", "warning");
         
@@ -1622,7 +1541,7 @@
         let reason = document.getElementById('cancel-reason').value;
         let resVal = document.getElementById('cancel-result').value;
         let amt = document.getElementById('cancel-amount').value;
-        let remark = document.getElementById('cancel-remark').value.trim();
+        let remark = document.getElementById('cancel-remark').value;
         
         if(!reason || !resVal) return customAlert("【取消理由】與【取消結果】皆為必填！", "warning");
         if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
@@ -1633,7 +1552,7 @@
             hideLoading(); 
             if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } 
             else customAlert("取消失敗：" + res.message, "error"); 
-         });
+        });
     }
 
     function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'restoreOrder', no: no, operator: document.getElementById('current-username').innerText }) }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
@@ -1650,7 +1569,7 @@
             let detailHTML = `<td class="log-detail"><div class="log-row-container"><div class="log-summary" title="${summary}">${summary}</div><div class="log-detail-link" onclick="showLogDetailsCache(${index})">[查看明細]</div></div></td>`;
             row.innerHTML = `<td class="log-time">${log.time}</td><td class="log-op">${log.operator}</td><td class="log-target">${log.target || '-'}</td><td class="log-action">${log.action}</td>${detailHTML}`;
             listBody.appendChild(row);
-         });
+        });
     }
 
     function showLogDetailsCache(index) { showLogDetails(window.globalLogCache[index].details); }
@@ -1688,6 +1607,7 @@
       document.getElementById('main-app').style.display = 'none';
     }
   });
+
   window.executeFirebaseLogin = function() {
     const email = document.getElementById('login-email').value;
     const pwd = document.getElementById('login-pwd').value;
