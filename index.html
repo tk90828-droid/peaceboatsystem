@@ -444,9 +444,15 @@
         
         <div id="page-logs" class="page-section">
             <div class="section-title">▍ 系統操作紀錄 (System Logs)</div>
-            <div class="search-bar" style="justify-content: space-between; align-items: center; padding: 15px 20px;">
+            <div class="search-bar" style="justify-content: space-between; align-items: center; padding: 15px 20px; flex-wrap: wrap; gap: 10px;">
                 <span style="font-size: 11px; color: var(--text-light); font-weight:600; text-transform:uppercase;">顯示最新操作歷史，方便稽核追蹤。</span>
-                <button type="button" class="btn-login" style="width: 90px; height: 32px; background:var(--white); color:var(--primary); border:1px solid var(--primary);" onclick="loadLogs(true)">↻ 更新</button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="date" id="log-start-date" style="padding: 0 10px; border: 1px solid var(--border); font-size: 12px; height: 32px; background: #FFF; color: var(--text-main);">
+                    <span style="font-size: 12px; color: var(--text-light); font-weight: bold;">至</span>
+                    <input type="date" id="log-end-date" style="padding: 0 10px; border: 1px solid var(--border); font-size: 12px; height: 32px; background: #FFF; color: var(--text-main);">
+                    <button type="button" class="btn-login" style="background:var(--success); height: 32px; padding: 0 15px; border: none; font-size: 11px;" onclick="exportLogs()">匯出紀錄</button>
+                    <button type="button" class="btn-login" style="width: 90px; height: 32px; background:var(--white); color:var(--primary); border:1px solid var(--primary);" onclick="loadLogs(true)">↻ 更新</button>
+                </div>
             </div>
             <table>
                 <thead>
@@ -544,7 +550,7 @@
             document.getElementById('input-modal-msg').innerHTML = msg;
             let inputEl = document.getElementById('input-modal-value');
             inputEl.type = isPassword ? 'password' : 'text'; inputEl.value = ''; 
-           
+            
             window._inputModalResolve = resolve;
             document.getElementById('input-modal').classList.add('show');
             setTimeout(() => inputEl.focus(), 100);
@@ -1591,11 +1597,76 @@
         document.getElementById('logs-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px; font-weight:bold; letter-spacing:0.1em; color:var(--primary);">SYNCING...</td></tr>';
         fetch(gasURL + "?action=getLogs&t=" + new Date().getTime()).then(res => res.json()).then(res => { if(res.status === 'success') { cachedLogs = res.data; isLogsDirty = false; renderLogsUI(cachedLogs); } });
     }
+
+    function exportLogs() {
+        if (!window.globalLogCache || window.globalLogCache.length === 0) {
+            return customAlert("目前沒有可匯出的歷史紀錄！", "warning");
+        }
+
+        let startDateVal = document.getElementById('log-start-date').value;
+        let endDateVal = document.getElementById('log-end-date').value;
+
+        // 確保跨瀏覽器兼容的日期格式 (將 input date 產生的 YYYY-MM-DD 轉為 YYYY/MM/DD 避免部分解析失敗)
+        let startTimestamp = startDateVal ? new Date(startDateVal.replace(/-/g, '/') + " 00:00:00").getTime() : 0;
+        let endTimestamp = endDateVal ? new Date(endDateVal.replace(/-/g, '/') + " 23:59:59").getTime() : Infinity;
+
+        if (startDateVal && endDateVal && startTimestamp > endTimestamp) {
+            return customAlert("開始日期不能大於結束日期！", "warning");
+        }
+
+        let filteredLogs = window.globalLogCache.filter(log => {
+            let logTimeStr = String(log.time);
+            
+            // 嘗試直接解析時間
+            let logTimestamp = new Date(logTimeStr).getTime();
+            
+            // 兼容處理 1：如果是 "2026-05-18 15:17:42" 等包含 '-' 和空格的 SQL 格式，某些瀏覽器不支援
+            if (isNaN(logTimestamp)) {
+                logTimestamp = new Date(logTimeStr.replace(/-/g, '/')).getTime();
+            }
+            
+            // 兼容處理 2：如果是其他奇怪格式（如 ISO 被上述 replace 破壞），我們用正則直接抓出年月日 (YYYY-MM-DD 或 YYYY/MM/DD)
+            if (isNaN(logTimestamp)) {
+                let m = logTimeStr.match(/(\d{4})[-/年](\d{1,2})[-/月](\d{1,2})/);
+                if (m) {
+                    logTimestamp = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])).getTime();
+                }
+            }
+
+            // ★修復核心★ 如果時間真的完全無法解析，只有在「完全沒有設定日期區間」時才放行，有設定就精準濾掉。
+            if (isNaN(logTimestamp)) {
+                return (!startDateVal && !endDateVal);
+            }
+
+            return logTimestamp >= startTimestamp && logTimestamp <= endTimestamp;
+        });
+
+        if (filteredLogs.length === 0) {
+            return customAlert("該區間內沒有符合的歷史紀錄！", "warning");
+        }
+
+        let exportData = [["時間", "操作人", "影響對象 (NO/ID/代號)", "動作類型", "詳細內容"]];
+        filteredLogs.forEach(log => {
+            exportData.push([
+                log.time || "",
+                log.operator || "",
+                log.target || "",
+                log.action || "",
+                log.details || ""
+            ]);
+        });
+
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.aoa_to_sheet(exportData);
+        XLSX.utils.book_append_sheet(wb, ws, "歷史紀錄");
+        
+        let dateSuffix = (startDateVal && endDateVal) ? `(${startDateVal}至${endDateVal})` : (startDateVal ? `(${startDateVal}起)` : (endDateVal ? `(至${endDateVal})` : "全部"));
+        XLSX.writeFile(wb, `系統歷史紀錄_${dateSuffix}.xlsx`);
+    }
 </script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  // 增加載入 sendPasswordResetEmail 模組
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
   
   const firebaseConfig = {
@@ -1645,7 +1716,6 @@
       });
   };
 
-  // 增加忘記密碼處理函式
   window.executeFirebaseResetPwd = function() {
     const email = document.getElementById('login-email').value.trim();
     if(!email) {
