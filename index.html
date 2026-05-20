@@ -887,21 +887,21 @@
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>東南訂編</label><input type="text" class="p-order-id" required></div>
-                <div class="input-group"><label>業務</label><input type="text" class="p-sales" required placeholder="例: 門市-業務名稱"></div>
+                <div class="input-group"><label>業務</label><input type="text" class="p-sales" required placeholder="例：門市-業務名稱"></div>
                 <div class="input-group"><label>中文姓名</label><input type="text" class="p-name" required></div>
                 <div class="input-group"><label>NAME (護照英文)</label><input type="text" class="p-ename" style="text-transform:uppercase" required></div>
                 <div class="input-group"><label>性別</label><select class="p-gender"><option value="F">女 (F)</option><option value="M">男 (M)</option></select></div>
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>生日</label><input type="text" class="p-birth" placeholder="YYYY/MM/DD" maxlength="10" oninput="formatDateInput(this)" required></div>
-                <div class="input-group"><label>報名來源</label><input type="text" class="p-source" value="" placeholder="例: 1/11 台北"></div>
-                <div class="input-group"><label>老客</label><input type="text" class="p-old-customer" placeholder="例: 118/否"></div>
+                <div class="input-group"><label>報名來源</label><input type="text" class="p-source" value="" placeholder="例：1/11 台北"></div>
+                <div class="input-group"><label>老客</label><input type="text" class="p-old-customer" placeholder="例：118/否"></div>
                 <div class="input-group"><label>登船港</label><input type="text" class="p-board-port" value="Yokohama"></div>
                 <div class="input-group"><label>離船港</label><input type="text" class="p-off-port" value="Keelung"></div>
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>當月優惠價</label><input type="text" class="p-promo" value="${isMain ? getCurrentYYYYMM() : inheritedPromo}" oninput="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}"></div>
-                <div class="input-group"><label>各種優惠價/特典</label><input type="text" class="p-promo-extras" placeholder="例: 1月繳清價-JGD 1萬(1萬)"></div>
+                <div class="input-group"><label>各種優惠價/特典</label><input type="text" class="p-promo-extras" placeholder="例：1月繳清價-JGD 1萬(1萬)"></div>
                 <div class="input-group"><label>預存金</label><input type="text" class="p-coupon-dep"></div>
                 <div class="input-group"><label>優惠券</label><input type="text" class="p-coupon-vou"></div>
                 <div class="input-group"><label>房型</label><select class="p-room" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" ${!isMain ? 'disabled' : ''}>${roomOptionsHTML}</select></div>
@@ -970,21 +970,8 @@
 
     function submitOrder() {
         const groupCode = document.getElementById('global-groupCode').value;
-        const operatorAccount = document.getElementById('current-username').innerText; 
-        const finalData = [];
-        let hasPortMismatch = false;
-
-        let defs = window.voyageDefaults[groupCode] || {};
-        let defBoard = (defs.boardPort !== undefined && defs.boardPort !== "") ? defs.boardPort : "Yokohama";
-        let defOff = (defs.offPort !== undefined && defs.offPort !== "") ? defs.offPort : "Keelung";
-
+        const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
         document.querySelectorAll('.passenger-block').forEach(b => {
-            let bp = b.querySelector('.p-board-port').value.trim();
-            let op = b.querySelector('.p-off-port').value.trim();
-            if (bp !== defBoard || op !== defOff) {
-                hasPortMismatch = true;
-            }
-
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
                 name: b.querySelector('.p-name').value, ename: b.querySelector('.p-ename').value.toUpperCase(), gender: b.querySelector('.p-gender').value, birth: b.querySelector('.p-birth').value,
@@ -997,21 +984,11 @@
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
-        
         if(finalData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
-        
-        const executeSubmit = () => {
-            showLoading("DATA SYNCING...");
-            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
-                hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
-            }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
-        };
-
-        if (hasPortMismatch) {
-            customConfirm(`注意：有旅客的「登船港」或「離船港」與此航程的預設值 (${defBoard} / ${defOff}) 不同！\n\n確定要繼續送出訂單嗎？`, executeSubmit, true);
-        } else {
-            executeSubmit();
-        }
+        showLoading("DATA SYNCING...");
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
+            hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
+        }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
     }
 
     function searchList() {
@@ -1250,6 +1227,22 @@
 
         const roomCounts = {};
         filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
+
+        // --- 關鍵修正：預先找出每個群組/同房裡「最小的 NO」 ---
+        let grpMinNo = {};
+        let roomMinNo = {};
+        filteredData.forEach(d => {
+            let grp = getCleanGroup(d.groupNote);
+            let rm = String(d.roomGroup || "").trim();
+            let cNo = String(d.no || "");
+            if (grp) {
+                if (!grpMinNo[grp] || cNo.localeCompare(grpMinNo[grp], undefined, {numeric: true}) < 0) grpMinNo[grp] = cNo;
+            }
+            if (rm && roomCounts[rm] > 1) {
+                if (!roomMinNo[rm] || cNo.localeCompare(roomMinNo[rm], undefined, {numeric: true}) < 0) roomMinNo[rm] = cNo;
+            }
+        });
+
         filteredData.sort((a, b) => {
             if (activeColSort) {
                 let vA = String(getFilterVal(a, activeColSort.col) || "").trim();
@@ -1261,43 +1254,44 @@
             let gA = getCleanGroup(a.groupNote); let gB = getCleanGroup(b.groupNote);
             let rA = String(a.roomGroup || '').trim(); let rB = String(b.roomGroup || '').trim();
             let sA = String(getVal(a, '特殊需求') || '').trim(); let sB = String(getVal(b, '特殊需求') || '').trim();
+            
             let hasGrpA = gA !== ''; let hasGrpB = gB !== '';
             let hasRoomA = (rA !== '' && roomCounts[rA] > 1); let hasRoomB = (rB !== '' && roomCounts[rB] > 1);
             let hasSpecA = sA !== ''; let hasSpecB = sB !== '';
 
+            const cmpNo = (no1, no2) => String(no1 || "").localeCompare(String(no2 || ""), undefined, {numeric: true});
+
             if (filterStatus === "同房") {
                 if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
-                if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+                if (hasRoomA && hasRoomB && rA !== rB) {
+                    let minCmp = cmpNo(roomMinNo[rA], roomMinNo[rB]);
+                    return minCmp !== 0 ? minCmp : rA.localeCompare(rB);
+                }
+                return cmpNo(a.no, b.no);
             } else {
                 if (hasGrpA !== hasGrpB) return hasGrpA ? -1 : 1;
                 if (hasGrpA && hasGrpB) {
-                    if (gA !== gB) return gA.localeCompare(gB);
+                    if (gA !== gB) {
+                        let minCmp = cmpNo(grpMinNo[gA], grpMinNo[gB]);
+                        return minCmp !== 0 ? minCmp : gA.localeCompare(gB);
+                    }
                     if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
-                    if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+                    if (hasRoomA && hasRoomB && rA !== rB) {
+                        let minCmp = cmpNo(roomMinNo[rA], roomMinNo[rB]);
+                        return minCmp !== 0 ? minCmp : rA.localeCompare(rB);
+                    }
                     if (hasSpecA !== hasSpecB) return hasSpecA ? -1 : 1;
+                    return cmpNo(a.no, b.no);
                 } else {
                     if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
-                    if (hasRoomA && hasRoomB && rA !== rB) return rA.localeCompare(rB);
+                    if (hasRoomA && hasRoomB && rA !== rB) {
+                        let minCmp = cmpNo(roomMinNo[rA], roomMinNo[rB]);
+                        return minCmp !== 0 ? minCmp : rA.localeCompare(rB);
+                    }
                     if (hasSpecA !== hasSpecB) return hasSpecA ? -1 : 1;
+                    return cmpNo(a.no, b.no);
                 }
             }
-
-            let pA = String(getVal(a, "當月優惠價") || "");
-            let pB = String(getVal(b, "當月優惠價") || "");
-            if (pA !== pB) return pA.localeCompare(pB);
-
-            let sA_src = String(getVal(a, "報名來源") || "");
-            let sB_src = String(getVal(b, "報名來源") || "");
-            if (sA_src !== sB_src) return sA_src.localeCompare(sB_src);
-
-            let eA = String(getVal(a, "各種優惠價/船內特典") || "");
-            let eB = String(getVal(b, "各種優惠價/船內特典") || "");
-            if (eA !== eB) return eA.localeCompare(eB);
-
-            let oA = String(getVal(a, "其他") || "");
-            let oB = String(getVal(b, "其他") || "");
-            if (oA !== oB) return oA.localeCompare(oB);
-            return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
         });
 
         let groupMap = {}; let roomMap = {};
@@ -1310,7 +1304,14 @@
             });
             if(d.roomGroup) { roomMap[d.roomGroup] = roomMap[d.roomGroup] || []; roomMap[d.roomGroup].push(d); } 
         });
-        Object.keys(groupMap).forEach(k => { groupMap[k].sort((a,b) => { let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; if (aL !== bL) return bL - aL; return parseInt(a.no) - parseInt(b.no); }); });
+        Object.keys(groupMap).forEach(k => { 
+            groupMap[k].sort((a,b) => { 
+                let aL = (a.isLeader && a.isLeader[k]) ? 1 : 0; 
+                let bL = (b.isLeader && b.isLeader[k]) ? 1 : 0; 
+                if (aL !== bL) return bL - aL; 
+                return String(a.no || "").localeCompare(String(b.no || ""), undefined, {numeric: true}); 
+            }); 
+        });
         const groupColors = ["#0B2038", "#0D9488"]; let currentGrpColorIdx = 0; let currentRoomBgIdx = 0; let lastGrp = null;
         let lastRoom = null;
 
@@ -1573,7 +1574,7 @@
             return;
         }
         let selectedData = Array.from(tempSelectedNos).map(no => window.currentGroupData.find(d => String(d.no) === no)).filter(Boolean);
-        selectedData.sort((a,b) => a.no - b.no);
+        selectedData.sort((a,b) => String(a.no || "").localeCompare(String(b.no || ""), undefined, {numeric: true}));
 
         let html = "";
         selectedData.forEach(d => {
