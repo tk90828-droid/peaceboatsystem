@@ -133,6 +133,10 @@
         .btn-update { background: transparent; border: 1px solid var(--accent); font-size: 11px; color: var(--accent); height: 30px; padding: 0 12px; border-radius: 4px;}
         .btn-update:hover { background: var(--accent); color: white; }
         
+        /* 新增：取消同房專屬按鈕樣式 (琥珀金警告色) */
+        .btn-outline-warning { background: transparent; border: 1px solid var(--waitlist); font-size: 11px; color: var(--waitlist); height: 30px; padding: 0 12px; border-radius: 4px;}
+        .btn-outline-warning:hover { background: var(--waitlist); color: white; }
+
         .btn-batch { background: var(--gold); font-size: 11px; color: var(--primary); height: 32px; padding: 0 15px; font-weight: 700; border-radius: 4px;}
         .btn-batch:hover { background: #D4B995; box-shadow: 0 2px 8px rgba(197, 168, 128, 0.4);}
         
@@ -152,7 +156,8 @@
 
         .sticky-1 { position: sticky; left: 0; width: 45px; z-index: 10; font-weight: 600; text-align: center; color: var(--text-light);}
         .sticky-2 { position: sticky; left: 45px; width: 160px; z-index: 10; font-weight: 600; color: var(--primary);}
-        .sticky-3 { position: sticky; left: 205px; width: 120px; z-index: 10; border-right: 1px solid var(--border) !important;}
+        /* 修改: 將 width 從 120px 加大至 180px */
+        .sticky-3 { position: sticky; left: 205px; width: 180px; z-index: 10; border-right: 1px solid var(--border) !important;}
         
         /* 修正 Sticky Header 顏色 */
         thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: var(--primary-light); color: var(--white); border-right: 1px solid rgba(255,255,255,0.1) !important;}
@@ -250,6 +255,11 @@
     <div style="cursor:pointer; padding:8px 12px; margin-bottom:6px; background:var(--sys-bg); border-radius:6px; transition:0.2s;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='var(--sys-bg)'" onclick="applySort('asc')">🔼 A ~ Z 排序 (小到大)</div>
     <div style="cursor:pointer; padding:8px 12px; margin-bottom:15px; background:var(--sys-bg); border-radius:6px; transition:0.2s;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='var(--sys-bg)'" onclick="applySort('desc')">🔽 Z ~ A 排序 (大到小)</div>
     <div style="border-top:1px solid var(--border); margin-bottom:15px;"></div>
+    
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="col-filter-search" placeholder="🔍 搜尋選項..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: inherit; background: var(--sys-bg); color: var(--text-main);" oninput="filterColumnCheckboxes(this.value)">
+    </div>
+
     <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer; font-weight:600; color:var(--text-main);">
         <input type="checkbox" id="filter-select-all" onchange="toggleAllFilters(this)"> 顯示全選
     </label>
@@ -983,6 +993,10 @@
     function openColumnFilter(e, colName) {
         e.stopPropagation(); currentFilterCol = colName;
         document.getElementById('filter-col-title').innerText = colName;
+        
+        let searchInput = document.getElementById('col-filter-search');
+        if(searchInput) searchInput.value = '';
+        
         let uniqueVals = new Set();
         window.currentGroupData.forEach(item => { let val = String(getFilterVal(item, colName) || "").trim(); uniqueVals.add(val); });
         let listDiv = document.getElementById('col-filter-list'); listDiv.innerHTML = "";
@@ -1002,7 +1016,32 @@
         document.getElementById('col-filter-overlay').style.display = 'block';
     }
 
-    function toggleAllFilters(chk) { document.querySelectorAll('.col-filter-cb').forEach(cb => cb.checked = chk.checked); }
+    function filterColumnCheckboxes(kw) {
+        kw = kw.toLowerCase().trim();
+        let listDiv = document.getElementById('col-filter-list');
+        let labels = listDiv.querySelectorAll('label');
+        labels.forEach(lbl => {
+            let cb = lbl.querySelector('.col-filter-cb');
+            if(!cb) return;
+            let valStr = String(cb.value).toLowerCase();
+            let displayTxt = (cb.value === "") ? "(空白/未填寫)" : valStr;
+            if (displayTxt.includes(kw)) {
+                lbl.style.display = "flex";
+            } else {
+                lbl.style.display = "none";
+            }
+        });
+    }
+
+    function toggleAllFilters(chk) { 
+        document.querySelectorAll('.col-filter-cb').forEach(cb => {
+            let lbl = cb.closest('label');
+            if (lbl && lbl.style.display !== 'none') {
+                cb.checked = chk.checked;
+            }
+        }); 
+    }
+    
     function closeColumnFilter() { document.getElementById('col-filter-popup').style.display = 'none'; document.getElementById('col-filter-overlay').style.display = 'none'; }
     function applySort(dir) { activeColSort = { col: currentFilterCol, dir: dir }; closeColumnFilter(); renderList(); }
     function applyColFilter() {
@@ -1107,7 +1146,7 @@
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務"];
         let headHtml = `<tr>
             <th class="sticky-1">NO.</th>
-            <th style="width:160px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
+            <th style="width:240px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
             <th class="sticky-2">旅客姓名 <span class="filter-icon" onclick="openColumnFilter(event, '旅客姓名')">▼</span></th>
             <th class="sticky-3">NAME <span class="filter-icon" onclick="openColumnFilter(event, 'NAME')">▼</span></th>`;
         targetCols.forEach(c => { 
@@ -1127,9 +1166,12 @@
             }
         });
         advCols.forEach(c => { 
+            let advWidth = "90px";
+            if (c === "SF船費" || c === "JGD") { advWidth = "120px"; }
+            
             if (c === "港務費" || c === "小費") {
-                headHtml += `<th class="adv-col" style="width:100px; cursor:pointer; color:var(--gold); text-decoration:underline;" onclick="batchUpdateFee('${c}')" title="點擊以批次更新所有旅客的${c}">${c} ✎</th>`;
-            } else { headHtml += `<th class="adv-col" style="width:100px; color:var(--gold);">${c}</th>`; }
+                headHtml += `<th class="adv-col" style="width:${advWidth}; cursor:pointer; color:var(--gold); text-decoration:underline;" onclick="batchUpdateFee('${c}')" title="點擊以批次更新所有旅客的${c}">${c} ✎</th>`;
+            } else { headHtml += `<th class="adv-col" style="width:${advWidth}; color:var(--gold);">${c}</th>`; }
         });
         headHtml += '<th style="width:75px; border-left:1px solid rgba(255,255,255,0.1); text-align:center;">同房管理</th>';
         headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">修改儲存</button></th></tr>';
@@ -1284,7 +1326,7 @@
                 tagHTML += `<span class="tag" style="background-color:#D97978; color:white; padding:2px 5px;" onmouseenter="showTagTooltip(event, '孩童備註: ${childVal}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">童</span>`;
             }
 
-            let roomCancelBtn = item.roomGroup ? `<button class="btn-update" style="border-color:var(--waitlist); color:var(--waitlist); width:100%; justify-content:center;" onclick="cancelRoomingLocally('${item.no}', this)">取消同房</button>` : '';
+            let roomCancelBtn = item.roomGroup ? `<button class="btn-outline-warning" style="width:100%; justify-content:center;" onclick="cancelRoomingLocally('${item.no}', this)">取消同房</button>` : '';
 
             let html = `
                 <td class="sticky-1" style="background-color: inherit;">${item.no}</td>
