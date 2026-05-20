@@ -88,11 +88,19 @@
         label { font-size: 10px; color: var(--text-light); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;}
         
         input[type="text"]:not(.td-input), input[type="number"]:not(.td-input), input[type="email"]:not(.td-input), input[type="password"]:not(.td-input), select:not(.td-input) { 
-            width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; transition: all 0.2s ease; background: var(--sys-bg); color: var(--text-main); height: 42px; font-family: inherit;
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; transition: all 0.2s ease; background: var(--sys-bg); color: var(--text-main); height: 42px; font-family: inherit; font-weight: 500;
         }
         
         input:not(.td-input):focus, select:not(.td-input):focus { outline: none; border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
         input:not(.td-input)[readonly], select:not(.td-input):disabled { background-color: #F1F5F9; border-color: transparent; color: var(--text-light); cursor: not-allowed; }
+        
+        /* --- 區分輸入框提示文字 (Placeholder) 的顏色 (已加深區別與斜體) --- */
+        input::placeholder, textarea::placeholder {
+             color: #94A3B8 !important; 
+             opacity: 0.6 !important; /* 降低透明度 */
+             font-style: italic !important; /* 加上斜體更容易區分 */
+             font-weight: 300 !important; /* 讓提示字體看起來輕盈一點 */
+        }
 
         /* --- 旅客區塊卡片 --- */
         #step-2-container { display: none; opacity: 0; transition: opacity 0.5s ease; margin-top: 50px; border-top: 1px solid var(--border); padding-top: 40px;}
@@ -133,7 +141,6 @@
         .btn-update { background: transparent; border: 1px solid var(--accent); font-size: 11px; color: var(--accent); height: 30px; padding: 0 12px; border-radius: 4px;}
         .btn-update:hover { background: var(--accent); color: white; }
         
-        /* 新增：取消同房專屬按鈕樣式 (琥珀金警告色) */
         .btn-outline-warning { background: transparent; border: 1px solid var(--waitlist); font-size: 11px; color: var(--waitlist); height: 30px; padding: 0 12px; border-radius: 4px;}
         .btn-outline-warning:hover { background: var(--waitlist); color: white; }
 
@@ -156,15 +163,16 @@
 
         .sticky-1 { position: sticky; left: 0; width: 45px; z-index: 10; font-weight: 600; text-align: center; color: var(--text-light);}
         .sticky-2 { position: sticky; left: 45px; width: 160px; z-index: 10; font-weight: 600; color: var(--primary);}
-        /* 修改: 將 width 從 120px 加大至 180px */
         .sticky-3 { position: sticky; left: 205px; width: 180px; z-index: 10; border-right: 1px solid var(--border) !important;}
         
-        /* 修正 Sticky Header 顏色 */
         thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: var(--primary-light); color: var(--white); border-right: 1px solid rgba(255,255,255,0.1) !important;}
 
         .td-input { width: 100%; height: 26px; padding: 0 8px; font-size: 12px; border: 1px solid transparent; background: transparent; border-radius: 4px; transition: 0.2s;}
         .td-input:focus { border: 1px solid var(--accent); background: var(--white); box-shadow: 0 0 0 2px rgba(13,148,136,0.1); }
         .td-readonly { background-color: transparent !important; font-weight: 600; pointer-events: none; color: var(--primary); }
+        /* 作法一：當擁有 readonly 時，讓鼠標顯示 pointer 以提示可雙擊編輯 */
+        .td-input[readonly]:not(.td-readonly) { cursor: pointer; }
+        .td-input[readonly]:not(.td-readonly):hover { background-color: rgba(13, 148, 136, 0.05); border: 1px dashed var(--accent); }
         
         /* 狀態標籤 */
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.2);}
@@ -189,8 +197,8 @@
         #page-logs table { table-layout: fixed; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);}
         #page-logs table th { background: var(--sys-bg); color: var(--primary); font-weight: 600; border-bottom: 1px solid var(--border);}
         #page-logs table td { padding: 15px; border-right: none; border-bottom: 1px solid var(--sys-bg);}
-        .log-time { width: 220px; color: var(--text-light); font-size: 11px; font-family: monospace;} /* 把 170px 改成 220px 或更大 */
-        .log-op { width: 140px; font-weight: 600; } /* 把 90px 改成 140px 或更大 */
+        .log-time { width: 220px; color: var(--text-light); font-size: 11px; font-family: monospace;} 
+        .log-op { width: 140px; font-weight: 600; } 
         .log-target { width: 180px; font-weight: 600; color: var(--accent); font-size: 12px;}
         .log-action { width: 100px; font-weight: 600; color: var(--primary); }
         .log-row-container { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 15px;}
@@ -879,21 +887,21 @@
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>東南訂編</label><input type="text" class="p-order-id" required></div>
-                <div class="input-group"><label>業務</label><input type="text" class="p-sales" required placeholder="例：門市-業務名稱"></div>
+                <div class="input-group"><label>業務</label><input type="text" class="p-sales" required placeholder="例: 門市-業務名稱"></div>
                 <div class="input-group"><label>中文姓名</label><input type="text" class="p-name" required></div>
                 <div class="input-group"><label>NAME (護照英文)</label><input type="text" class="p-ename" style="text-transform:uppercase" required></div>
                 <div class="input-group"><label>性別</label><select class="p-gender"><option value="F">女 (F)</option><option value="M">男 (M)</option></select></div>
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>生日</label><input type="text" class="p-birth" placeholder="YYYY/MM/DD" maxlength="10" oninput="formatDateInput(this)" required></div>
-                <div class="input-group"><label>報名來源</label><input type="text" class="p-source" value="" placeholder="例：1/11 台北"></div>
-                <div class="input-group"><label>老客</label><input type="text" class="p-old-customer" placeholder="例：118/否"></div>
+                <div class="input-group"><label>報名來源</label><input type="text" class="p-source" value="" placeholder="例: 1/11 台北"></div>
+                <div class="input-group"><label>老客</label><input type="text" class="p-old-customer" placeholder="例: 118/否"></div>
                 <div class="input-group"><label>登船港</label><input type="text" class="p-board-port" value="Yokohama"></div>
                 <div class="input-group"><label>離船港</label><input type="text" class="p-off-port" value="Keelung"></div>
             </div>
             <div class="grid-5">
                 <div class="input-group"><label>當月優惠價</label><input type="text" class="p-promo" value="${isMain ? getCurrentYYYYMM() : inheritedPromo}" oninput="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}"></div>
-                <div class="input-group"><label>各種優惠價/特典</label><input type="text" class="p-promo-extras" placeholder="例：1月繳清價-JGD 1萬(1萬)"></div>
+                <div class="input-group"><label>各種優惠價/特典</label><input type="text" class="p-promo-extras" placeholder="例: 1月繳清價-JGD 1萬(1萬)"></div>
                 <div class="input-group"><label>預存金</label><input type="text" class="p-coupon-dep"></div>
                 <div class="input-group"><label>優惠券</label><input type="text" class="p-coupon-vou"></div>
                 <div class="input-group"><label>房型</label><select class="p-room" onchange="${isMain ? 'syncP1ToAll()' : 'autoCalcPrice('+num+')'}" ${!isMain ? 'disabled' : ''}>${roomOptionsHTML}</select></div>
@@ -962,8 +970,21 @@
 
     function submitOrder() {
         const groupCode = document.getElementById('global-groupCode').value;
-        const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
+        const operatorAccount = document.getElementById('current-username').innerText; 
+        const finalData = [];
+        let hasPortMismatch = false;
+
+        let defs = window.voyageDefaults[groupCode] || {};
+        let defBoard = (defs.boardPort !== undefined && defs.boardPort !== "") ? defs.boardPort : "Yokohama";
+        let defOff = (defs.offPort !== undefined && defs.offPort !== "") ? defs.offPort : "Keelung";
+
         document.querySelectorAll('.passenger-block').forEach(b => {
+            let bp = b.querySelector('.p-board-port').value.trim();
+            let op = b.querySelector('.p-off-port').value.trim();
+            if (bp !== defBoard || op !== defOff) {
+                hasPortMismatch = true;
+            }
+
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
                 name: b.querySelector('.p-name').value, ename: b.querySelector('.p-ename').value.toUpperCase(), gender: b.querySelector('.p-gender').value, birth: b.querySelector('.p-birth').value,
@@ -976,11 +997,21 @@
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
+        
         if(finalData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
-        showLoading("DATA SYNCING...");
-        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
-            hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
-        }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
+        
+        const executeSubmit = () => {
+            showLoading("DATA SYNCING...");
+            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
+                hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
+            }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
+        };
+
+        if (hasPortMismatch) {
+            customConfirm(`注意：有旅客的「登船港」或「離船港」與此航程的預設值 (${defBoard} / ${defOff}) 不同！\n\n確定要繼續送出訂單嗎？`, executeSubmit, true);
+        } else {
+            executeSubmit();
+        }
     }
 
     function searchList() {
@@ -1330,46 +1361,51 @@
 
             let roomCancelBtn = item.roomGroup ? `<button class="btn-outline-warning" style="width:100%; justify-content:center;" onclick="cancelRoomingLocally('${item.no}', this)">取消同房</button>` : '';
 
+            // 雙擊解鎖用的鎖定屬性模板 (作法一)
+            const lockAttr = `readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"`;
+
             let html = `
                 <td class="sticky-1" style="background-color: inherit;">${item.no}</td>
-                <td><div style="display:flex; align-items:center;">${specialReqHtml}<input class="td-input req-val" style="flex:1; min-width:0;" value="${specialReq}"></div></td>
+                <td><div style="display:flex; align-items:center;">${specialReqHtml}<input class="td-input req-val" style="flex:1; min-width:0;" value="${specialReq}" ${lockAttr}></div></td>
                 
                 <td class="sticky-2" style="background-color: inherit; overflow:visible;">
                     <div style="display:flex; align-items:center; width:100%;">
                         <span class="status-dot ${dotClass}"></span>
-                        <input type="text" class="td-input edit-name" value="${item.name}" style="flex:1; min-width:60px; font-weight:600; color:inherit;">
+                        <input type="text" class="td-input edit-name" value="${item.name}" style="flex:1; min-width:60px; font-weight:600; color:inherit;" ${lockAttr}>
                         ${tagHTML}
                     </div>
                 </td>
                 <td class="sticky-3" style="background-color: inherit;">
-                    <input type="text" class="td-input edit-ename" value="${item.ename}" style="text-transform:uppercase;">
+                    <input type="text" class="td-input edit-ename" value="${item.ename}" style="text-transform:uppercase;" ${lockAttr}>
                 </td>
 
-                <td><input type="text" class="td-input edit-id" value="${item.id || ''}"></td>
-                <td><input type="text" class="td-input edit-birth" value="${fmtDate(getVal(item, "生日"))}"></td>
-                <td><input type="text" class="td-input edit-source" value="${getVal(item, "報名來源")}"></td>
-                <td><input type="text" class="td-input edit-oldCustomer" value="${getVal(item, "老客")}"></td>
-                <td><input type="text" class="td-input edit-promo" value="${getVal(item, "當月優惠價")}" onchange="fetchDictForGridRow('${item.no}')"></td>
-                <td><input type="text" class="td-input edit-promoExtras" value="${getVal(item, "各種優惠價/船內特典")}"></td>
-                <td><input type="text" class="td-input edit-couponDep" value="${getVal(item, "Coupon船內預存金")}"></td>
-                <td><input type="text" class="td-input edit-couponVou" value="${getVal(item, "Coupon船內優惠券")}"></td>
+                <td><input type="text" class="td-input edit-id" value="${item.id || ''}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-birth" value="${fmtDate(getVal(item, "生日"))}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-source" value="${getVal(item, "報名來源")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-oldCustomer" value="${getVal(item, "老客")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-promo" value="${getVal(item, "當月優惠價")}" onchange="fetchDictForGridRow('${item.no}')" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-promoExtras" value="${getVal(item, "各種優惠價/船內特典")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-couponDep" value="${getVal(item, "Coupon船內預存金")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-couponVou" value="${getVal(item, "Coupon船內優惠券")}" ${lockAttr}></td>
                 <td><select class="td-input edit-room" onchange="fetchDictForGridRow('${item.no}')"><option value="${item.roomType}" selected>${item.roomType}</option>${roomOptionsHTML.replace(`<option value="">-- 請選擇房型 --</option>`, '')}</select></td>
-                <td><input type="text" class="td-input edit-bp" value="${getVal(item, "登船港")}"></td>
-                <td><input type="text" class="td-input edit-op" value="${getVal(item, "離船港")}"></td>
+                <td><input type="text" class="td-input edit-bp" value="${getVal(item, "登船港")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-op" value="${getVal(item, "離船港")}" ${lockAttr}></td>
                 <td><input type="text" class="td-input td-readonly edit-tot" value="${getVal(item, "基本旅費總價")}" readonly></td>
                 <td><input type="text" class="td-input td-readonly edit-crate" value="${getVal(item, "佣金%")}" readonly style="color:var(--text-light); font-weight:normal;"></td>
                 <td><input type="text" class="td-input td-readonly edit-comm" value="${getVal(item, "佣金")}" readonly style="color:var(--danger);"></td>
-                <td><input type="number" class="td-input edit-nameChange" value="${getVal(item, "名義變更金額")}" oninput="calcGridRow('${item.no}')"></td>
+                <td><input type="number" class="td-input edit-nameChange" value="${getVal(item, "名義變更金額")}" oninput="calcGridRow('${item.no}')" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"></td>
                 <td><input type="text" class="td-input td-readonly edit-set" value="${getVal(item, "SET應付")}" readonly style="color:var(--accent);"></td>
-                <td><input type="text" class="td-input edit-operator" value="${getVal(item, "業務")}"></td>
-                <td><input type="text" class="td-input edit-orderId" value="${getVal(item, "訂編")}"></td>
+                <td><input type="text" class="td-input edit-operator" value="${getVal(item, "業務")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-orderId" value="${getVal(item, "訂編")}" ${lockAttr}></td>
             `;
 
             advCols.forEach(c => { 
                 let extraAttr = ''; let extraClass = '';
                 if (c === "港務費" || c === "小費") { extraAttr = `type="number" readonly`; extraClass = ` td-readonly`; }
-                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { extraAttr = `type="number" oninput="calcGridRow('${item.no}')"`; }
-                else { extraAttr = `type="text"`; }
+                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { 
+                    extraAttr = `type="number" oninput="calcGridRow('${item.no}')" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true); calcGridRow('${item.no}');" title="雙擊以編輯"`; 
+                }
+                else { extraAttr = `type="text" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"`; }
                 html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${getVal(item, c)}" ${extraAttr}></td>`;
             });
 
