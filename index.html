@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1440, user-scalable=yes">
     <title>和平船大表系統 - Premium Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -91,15 +91,26 @@
             width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; transition: all 0.2s ease; background: var(--sys-bg); color: var(--text-main); height: 42px; font-family: inherit; font-weight: 500;
         }
         
+        /* 高級下拉選單樣式，修正箭頭並加上安全距離 */
+        select:not(.td-input) {
+            padding-right: 35px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
         input:not(.td-input):focus, select:not(.td-input):focus { outline: none; border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
         input:not(.td-input)[readonly], select:not(.td-input):disabled { background-color: #F1F5F9; border-color: transparent; color: var(--text-light); cursor: not-allowed; }
         
-        /* --- 區分輸入框提示文字 (Placeholder) 的顏色 (已加深區別與斜體) --- */
         input::placeholder, textarea::placeholder {
              color: #94A3B8 !important; 
-             opacity: 0.6 !important; /* 降低透明度 */
-             font-style: italic !important; /* 加上斜體更容易區分 */
-             font-weight: 300 !important; /* 讓提示字體看起來輕盈一點 */
+             opacity: 0.6 !important; 
+             font-style: italic !important; 
+             font-weight: 300 !important; 
         }
 
         /* --- 旅客區塊卡片 --- */
@@ -139,7 +150,7 @@
         .btn-remove:hover { border-bottom-color: var(--danger); }
         
         .btn-update { background: transparent; border: 1px solid var(--accent); font-size: 11px; color: var(--accent); height: 30px; padding: 0 12px; border-radius: 4px;}
-        .btn-update:hover { background: var(--accent); color: white; }
+        .btn-update:hover { background: rgba(197, 168, 128, 0.15); color: var(--primary) !important; border-color: var(--gold) !important; }
         
         .btn-outline-warning { background: transparent; border: 1px solid var(--waitlist); font-size: 11px; color: var(--waitlist); height: 30px; padding: 0 12px; border-radius: 4px;}
         .btn-outline-warning:hover { background: var(--waitlist); color: white; }
@@ -161,16 +172,15 @@
         tbody tr { transition: background-color 0.2s; }
         tbody tr:hover { background-color: #F8FAFC !important; }
 
-        .sticky-1 { position: sticky; left: 0; width: 45px; z-index: 10; font-weight: 600; text-align: center; color: var(--text-light);}
-        .sticky-2 { position: sticky; left: 45px; width: 160px; z-index: 10; font-weight: 600; color: var(--primary);}
-        .sticky-3 { position: sticky; left: 205px; width: 180px; z-index: 10; border-right: 1px solid var(--border) !important;}
+        .sticky-1 { position: sticky; left: 0; width: 65px; z-index: 10; font-weight: 600; text-align: center; color: var(--text-light);}
+        .sticky-2 { position: sticky; left: 65px; width: 160px; z-index: 10; font-weight: 600; color: var(--primary);}
+        .sticky-3 { position: sticky; left: 225px; width: 180px; z-index: 10; border-right: 1px solid var(--border) !important;}
         
         thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: var(--primary-light); color: var(--white); border-right: 1px solid rgba(255,255,255,0.1) !important;}
 
         .td-input { width: 100%; height: 26px; padding: 0 8px; font-size: 12px; border: 1px solid transparent; background: transparent; border-radius: 4px; transition: 0.2s;}
         .td-input:focus { border: 1px solid var(--accent); background: var(--white); box-shadow: 0 0 0 2px rgba(13,148,136,0.1); }
         .td-readonly { background-color: transparent !important; font-weight: 600; pointer-events: none; color: var(--primary); }
-        /* 作法一：當擁有 readonly 時，讓鼠標顯示 pointer 以提示可雙擊編輯 */
         .td-input[readonly]:not(.td-readonly) { cursor: pointer; }
         .td-input[readonly]:not(.td-readonly):hover { background-color: rgba(13, 148, 136, 0.05); border: 1px dashed var(--accent); }
         
@@ -491,16 +501,18 @@
                         <span class="clear-btn" onclick="clearInput('search-name')">&times;</span>
                     </div>
                 </div>
-                <div class="input-group" style="width: 150px;">
+                <div class="input-group" style="width: 160px;">
                     <label>狀態篩選</label>
                     <select id="status-filter" onchange="renderList()">
-                        <option value="全部">○ 顯示全部</option>
-                        <option value="正常">● 報名成功</option>
-                        <option value="候補">● 候補名單</option>
-                        <option value="群組">● 群組</option>
-                        <option value="同房">● 同房</option>
-                        <option value="孩童">● 孩童</option>
-                        <option value="已取消">● 已取消</option>
+                        <option value="全部">顯示全部</option>
+                        <option value="正常">報名成功</option>
+                        <option value="候補">候補名單</option>
+                        <option value="群組">群組</option>
+                        <option value="同房">同房</option>
+                        <option value="孩童">孩童</option>
+                        <option value="特殊需求">特殊需求</option>
+                        <option value="無ID">無ID</option>
+                        <option value="已取消">已取消訂單</option>
                     </select>
                 </div>
                 <button type="button" class="btn-login" style="width: 100px; border-radius:6px;" onclick="searchList()">SEARCH</button>
@@ -517,7 +529,10 @@
                 <div id="list-stats" style="font-weight:500; color:var(--primary); font-size:13px; letter-spacing:0.05em; border-left:3px solid var(--gold); padding-left:12px;">
                     請先搜尋航程以載入名單統計
                 </div>
-                <button class="btn-update" style="border-color:var(--text-light); color:var(--text-light); height:32px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序與篩選</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-update" style="border-color:var(--primary); color:var(--primary); height:32px; font-size:11px; font-weight: 700;" onclick="sortByNoOnly()">↓ NO. 依序排列</button>
+                    <button class="btn-update" style="border-color:var(--text-light); color:var(--text-light); height:32px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序與篩選</button>
+                </div>
             </div>
 
             <div class="table-wrapper">
@@ -611,6 +626,7 @@
     let activeColFilters = {};
     let activeColSort = null;
     let currentFilterCol = ""; 
+    let forceNoSort = false;
 
     function clearInput(id) {
         const el = document.getElementById(id);
@@ -971,7 +987,19 @@
     function submitOrder() {
         const groupCode = document.getElementById('global-groupCode').value;
         const operatorAccount = document.getElementById('current-username').innerText; const finalData = [];
+        let hasPortMismatch = false;
+
+        let defs = window.voyageDefaults[groupCode] || {};
+        let defBoard = (defs.boardPort !== undefined && defs.boardPort !== "") ? defs.boardPort : "Yokohama";
+        let defOff = (defs.offPort !== undefined && defs.offPort !== "") ? defs.offPort : "Keelung";
+
         document.querySelectorAll('.passenger-block').forEach(b => {
+            let bp = b.querySelector('.p-board-port').value.trim();
+            let op = b.querySelector('.p-off-port').value.trim();
+            if (bp !== defBoard || op !== defOff) {
+                hasPortMismatch = true;
+            }
+
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
                 name: b.querySelector('.p-name').value, ename: b.querySelector('.p-ename').value.toUpperCase(), gender: b.querySelector('.p-gender').value, birth: b.querySelector('.p-birth').value,
@@ -984,11 +1012,21 @@
                 sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
             });
         });
+        
         if(finalData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
-        showLoading("DATA SYNCING...");
-        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
-            hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
-        }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
+        
+        const executeSubmit = () => {
+            showLoading("DATA SYNCING...");
+            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: finalData, operatorAccount: operatorAccount }) }).then(res => res.json()).then(res => {
+                hideLoading(); if(res.status === 'success'){ isLogsDirty = true; customAlert("已新增訂單", "success"); document.getElementById('orderForm').reset(); document.getElementById('passengers-wrapper').innerHTML = ''; document.getElementById('global-groupCode').value = ''; document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); const t = new Date().getTime(); fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { if(r.status === 'success') { const datalist = document.getElementById('groupOptions'); datalist.innerHTML = ""; r.data.forEach(group => { const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); }); } }); } else { customAlert("寫入失敗：" + res.message, "error"); }
+            }).catch(err => { hideLoading(); customAlert("同步失敗，請檢查網路狀態", "error"); });
+        };
+
+        if (hasPortMismatch) {
+            customConfirm(`注意：有旅客的「登船港」或「離船港」與此航程的預設值 (${defBoard} / ${defOff}) 不同！\n\n確定要繼續送出訂單嗎？`, executeSubmit, true);
+        } else {
+            executeSubmit();
+        }
     }
 
     function searchList() {
@@ -996,6 +1034,12 @@
         if(!groupCode) { customAlert("請先輸入或選擇欲搜尋的航程代碼", "warning"); return; } showLoading("FETCHING DATA...");
         const t = new Date().getTime();
         fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("讀取失敗，請確認網路連線。", "error"); });
+    }
+
+    function sortByNoOnly() {
+        forceNoSort = true;
+        activeColSort = null;
+        renderList();
     }
 
     function openColumnFilter(e, colName) {
@@ -1061,7 +1105,15 @@
         closeColumnFilter(); renderList();
     }
     function clearColFilter() { delete activeColFilters[currentFilterCol]; closeColumnFilter(); renderList(); }
-    function resetTableFilters() { activeColFilters = {}; activeColSort = null; renderList(); }
+    
+    function resetTableFilters() { 
+        activeColFilters = {}; 
+        activeColSort = null; 
+        forceNoSort = false;
+        document.getElementById('status-filter').value = "全部";
+        document.getElementById('search-name').value = "";
+        renderList(); 
+    }
 
     async function batchUpdateFee(type) {
         let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
@@ -1130,6 +1182,7 @@
     function getVal(item, colName) { const idx = window.currentGroupHeaders.indexOf(colName); return idx > -1 ? (item.raw[idx] !== undefined ? item.raw[idx] : "") : ""; }
 
     function getFilterVal(item, col) {
+        if(col === "NO") return String(item.no || "");
         if(col === "旅客姓名") return item.name || "";
         if(col === "NAME") return item.ename || "";
         if(col === "ID") return item.id || "";
@@ -1152,8 +1205,10 @@
         let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務"];
+        
+        let activeClsNo = activeColFilters['NO'] ? 'active' : '';
         let headHtml = `<tr>
-            <th class="sticky-1">NO.</th>
+            <th class="sticky-1" style="z-index: 40;">NO. <span class="filter-icon ${activeClsNo}" onclick="openColumnFilter(event, 'NO')">▼</span></th>
             <th style="width:240px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
             <th class="sticky-2">旅客姓名 <span class="filter-icon" onclick="openColumnFilter(event, '旅客姓名')">▼</span></th>
             <th class="sticky-3">NAME <span class="filter-icon" onclick="openColumnFilter(event, 'NAME')">▼</span></th>`;
@@ -1199,12 +1254,21 @@
             if (filterStatus === "正常") { if (s !== "正常" && s !== "") return false; } 
             else if (filterStatus === "已取消" && s !== "已取消") { return false; } 
             else if (filterStatus === "候補" && s !== "候補") { return false; }
+            else if (filterStatus === "無ID") { if (String(item.id || "").trim() !== "") return false; }
+
             if (filterStatus === "群組" && !item.groupNote) return false;
             if (filterStatus === "同房" && !item.roomGroup) return false;
             if (filterStatus === "孩童") {
                 let childVal = getVal(item, "孩童備註");
                 if (!childVal || childVal === "無" || childVal.trim() === "") return false;
             }
+            
+            // --- 新增特殊需求篩選邏輯 ---
+            if (filterStatus === "特殊需求") {
+                let specReq = getVal(item, "特殊需求");
+                if (!specReq || String(specReq).trim() === "") return false;
+            }
+            // ---------------------------
             
             if (filterName) {
                 let matchName = item.name && String(item.name).toLowerCase().includes(filterName);
@@ -1228,7 +1292,6 @@
         const roomCounts = {};
         filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
 
-        // --- 關鍵修正：預先找出每個群組/同房裡「最小的 NO」 ---
         let grpMinNo = {};
         let roomMinNo = {};
         filteredData.forEach(d => {
@@ -1244,6 +1307,13 @@
         });
 
         filteredData.sort((a, b) => {
+            const cmpNo = (no1, no2) => String(no1 || "").localeCompare(String(no2 || ""), undefined, {numeric: true});
+
+            // 判斷是否為「僅透過 NO 排序」模式
+            if (forceNoSort) {
+                return cmpNo(a.no, b.no);
+            }
+
             if (activeColSort) {
                 let vA = String(getFilterVal(a, activeColSort.col) || "").trim();
                 let vB = String(getFilterVal(b, activeColSort.col) || "").trim();
@@ -1258,8 +1328,6 @@
             let hasGrpA = gA !== ''; let hasGrpB = gB !== '';
             let hasRoomA = (rA !== '' && roomCounts[rA] > 1); let hasRoomB = (rB !== '' && roomCounts[rB] > 1);
             let hasSpecA = sA !== ''; let hasSpecB = sB !== '';
-
-            const cmpNo = (no1, no2) => String(no1 || "").localeCompare(String(no2 || ""), undefined, {numeric: true});
 
             if (filterStatus === "同房") {
                 if (hasRoomA !== hasRoomB) return hasRoomA ? -1 : 1;
@@ -1759,7 +1827,6 @@
         let startDateVal = document.getElementById('log-start-date').value;
         let endDateVal = document.getElementById('log-end-date').value;
 
-        // 確保跨瀏覽器兼容的日期格式 (將 input date 產生的 YYYY-MM-DD 轉為 YYYY/MM/DD 避免部分解析失敗)
         let startTimestamp = startDateVal ? new Date(startDateVal.replace(/-/g, '/') + " 00:00:00").getTime() : 0;
         let endTimestamp = endDateVal ? new Date(endDateVal.replace(/-/g, '/') + " 23:59:59").getTime() : Infinity;
 
@@ -1769,16 +1836,12 @@
 
         let filteredLogs = window.globalLogCache.filter(log => {
             let logTimeStr = String(log.time);
-            
-            // 嘗試直接解析時間
             let logTimestamp = new Date(logTimeStr).getTime();
             
-            // 兼容處理 1：如果是 "2026-05-18 15:17:42" 等包含 '-' 和空格的 SQL 格式，某些瀏覽器不支援
             if (isNaN(logTimestamp)) {
                 logTimestamp = new Date(logTimeStr.replace(/-/g, '/')).getTime();
             }
             
-            // 兼容處理 2：如果是其他奇怪格式（如 ISO 被上述 replace 破壞），我們用正則直接抓出年月日 (YYYY-MM-DD 或 YYYY/MM/DD)
             if (isNaN(logTimestamp)) {
                 let m = logTimeStr.match(/(\d{4})[-/年](\d{1,2})[-/月](\d{1,2})/);
                 if (m) {
@@ -1786,7 +1849,6 @@
                 }
             }
 
-            // ★修復核心★ 如果時間真的完全無法解析，只有在「完全沒有設定日期區間」時才放行，有設定就精準濾掉。
             if (isNaN(logTimestamp)) {
                 return (!startDateVal && !endDateVal);
             }
