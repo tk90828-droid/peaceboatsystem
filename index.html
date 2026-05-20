@@ -1300,7 +1300,7 @@
 
         let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
         if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
-        if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
+        if (Object.keys(activeColFilters).length > 0) statsText += ` `;
         document.getElementById('list-stats').innerText = statsText;
         if(filteredData.length === 0) { listBody.innerHTML = `<tr><td colspan="45" style="text-align:center; padding:50px; color:var(--text-light);">沒有符合條件的名單</td></tr>`; return; }
 
