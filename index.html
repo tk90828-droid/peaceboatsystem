@@ -148,7 +148,7 @@
         .table-wrapper::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }
 
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; table-layout: fixed;}
-        th, td { padding: 12px 10px; border-bottom: 1px solid var(--sys-bg); border-right: 1px solid var(--sys-bg); text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; vertical-align:middle;}
+        th, td { padding: 4px 8px; border-bottom: 1px solid var(--sys-bg); border-right: 1px solid var(--sys-bg); text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; vertical-align:middle;}
         
         thead th { position: sticky; top: 0; background: var(--primary); font-weight: 500; color: var(--white); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; z-index: 20; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-right: 1px solid rgba(255,255,255,0.1);}
         tbody tr { transition: background-color 0.2s; }
@@ -162,7 +162,7 @@
         /* 修正 Sticky Header 顏色 */
         thead th.sticky-1, thead th.sticky-2, thead th.sticky-3 { z-index: 30; background-color: var(--primary-light); color: var(--white); border-right: 1px solid rgba(255,255,255,0.1) !important;}
 
-        .td-input { width: 100%; height: 32px; padding: 0 8px; font-size: 12px; border: 1px solid transparent; background: transparent; border-radius: 4px; transition: 0.2s;}
+        .td-input { width: 100%; height: 26px; padding: 0 8px; font-size: 12px; border: 1px solid transparent; background: transparent; border-radius: 4px; transition: 0.2s;}
         .td-input:focus { border: 1px solid var(--accent); background: var(--white); box-shadow: 0 0 0 2px rgba(13,148,136,0.1); }
         .td-readonly { background-color: transparent !important; font-weight: 600; pointer-events: none; color: var(--primary); }
         
@@ -181,8 +181,8 @@
         tr.group-border-top > td { border-top: 2px solid var(--grp-color) !important; }
         tr.group-border-bottom > td { border-bottom: 2px solid var(--grp-color) !important; }
 
-        .room-bg-1 { background-color: #F8FAFC !important; } 
-        .room-bg-2 { background-color: #F1F5F9 !important; } 
+        .room-bg-1 { background-color: #E8F0F6 !important; } 
+        .room-bg-2 { background-color: #F6F1EA !important; } 
         .normal-bg { background-color: var(--white) !important; }
         
         /* --- Logs 系統 --- */
@@ -1155,6 +1155,8 @@
                 if(c === "房型") w = "220px";
                 if(c === "登船港" || c === "離船港" || c === "ID" || c === "訂編" || c === "業務") w = "105px";
                 if(c === "生日") w = "110px"; 
+                if(c === "報名來源") w = "150px";
+                if(c === "各種優惠價/船內特典") w = "200px";
                 if(c === "基本旅費總價" || c === "SET應付" || c === "名義變更金額") w = "85px";
                 
                 let displayC = c;
