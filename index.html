@@ -495,7 +495,7 @@
                     </div>
                 </div>
                 <div class="input-group" style="width:160px;">
-                    <label>旅客姓名/ID (選填)</label>
+                    <label>旅客姓名/ID</label>
                     <div class="input-wrapper">
                         <input type="text" id="search-name" placeholder="可選填" onkeydown="if(event.key === 'Enter') searchList()">
                         <span class="clear-btn" onclick="clearInput('search-name')">&times;</span>
@@ -530,8 +530,8 @@
                     請先搜尋航程以載入名單統計
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-update" style="border-color:var(--primary); color:var(--primary); height:32px; font-size:11px; font-weight: 700;" onclick="sortByNoOnly()">↓ NO. 依序排列</button>
-                    <button class="btn-update" style="border-color:var(--text-light); color:var(--text-light); height:32px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序與篩選</button>
+                    <button class="btn-update" style="border-color:var(--primary); color:var(--primary); height:32px; font-size:11px; font-weight: 700;" onclick="sortByNoOnly()">↓ NO.排序</button>
+                    <button class="btn-update" style="border-color:var(--text-light); color:var(--text-light); height:32px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序</button>
                 </div>
             </div>
 
@@ -1249,6 +1249,16 @@
             return; 
         }
 
+        // ★★★ 修正核心 1：先針對「全局」的有效名單計算同房人數 ★★★
+        const roomCounts = {};
+        window.currentGroupData.forEach(item => { 
+            // 排除已取消的旅客，確保只有真正還在船上的人才算同房
+            if (item.status !== "已取消") {
+                const rg = String(item.roomGroup || "").trim(); 
+                if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; 
+            }
+        });
+
         let filteredData = window.currentGroupData.filter(item => {
             let s = item.status || "";
             if (filterStatus === "正常") { if (s !== "正常" && s !== "") return false; } 
@@ -1257,18 +1267,22 @@
             else if (filterStatus === "無ID") { if (String(item.id || "").trim() !== "") return false; }
 
             if (filterStatus === "群組" && !item.groupNote) return false;
-            if (filterStatus === "同房" && !item.roomGroup) return false;
+            
+            // ★★★ 修正核心 2：利用算好的全局 roomCounts，確認同房人數 >= 2 才顯示 ★★★
+            if (filterStatus === "同房") {
+                const rg = String(item.roomGroup || "").trim();
+                if (!rg || (roomCounts[rg] || 0) < 2) return false;
+            }
+            
             if (filterStatus === "孩童") {
                 let childVal = getVal(item, "孩童備註");
                 if (!childVal || childVal === "無" || childVal.trim() === "") return false;
             }
             
-            // --- 新增特殊需求篩選邏輯 ---
             if (filterStatus === "特殊需求") {
                 let specReq = getVal(item, "特殊需求");
                 if (!specReq || String(specReq).trim() === "") return false;
             }
-            // ---------------------------
             
             if (filterName) {
                 let matchName = item.name && String(item.name).toLowerCase().includes(filterName);
@@ -1283,14 +1297,12 @@
             }
             return true;
         });
+
         let statsText = `航程-${currentGroupCode}：${window.currentGroupData.length}人 ｜ 篩選結果：${filteredData.length}人`;
         if (filterStatus !== "全部") statsText += ` (${filterStatus})`;
         if (Object.keys(activeColFilters).length > 0) statsText += ` (已套用次篩選)`;
         document.getElementById('list-stats').innerText = statsText;
         if(filteredData.length === 0) { listBody.innerHTML = `<tr><td colspan="45" style="text-align:center; padding:50px; color:var(--text-light);">沒有符合條件的名單</td></tr>`; return; }
-
-        const roomCounts = {};
-        filteredData.forEach(item => { const rg = String(item.roomGroup || "").trim(); if (rg !== "") roomCounts[rg] = (roomCounts[rg] || 0) + 1; });
 
         let grpMinNo = {};
         let roomMinNo = {};
@@ -1309,7 +1321,6 @@
         filteredData.sort((a, b) => {
             const cmpNo = (no1, no2) => String(no1 || "").localeCompare(String(no2 || ""), undefined, {numeric: true});
 
-            // 判斷是否為「僅透過 NO 排序」模式
             if (forceNoSort) {
                 return cmpNo(a.no, b.no);
             }
@@ -1430,7 +1441,6 @@
 
             let roomCancelBtn = item.roomGroup ? `<button class="btn-outline-warning" style="width:100%; justify-content:center;" onclick="cancelRoomingLocally('${item.no}', this)">取消同房</button>` : '';
 
-            // 雙擊解鎖用的鎖定屬性模板 (作法一)
             const lockAttr = `readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"`;
 
             let html = `
