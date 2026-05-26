@@ -46,6 +46,16 @@
             -webkit-font-smoothing: antialiased;
         }
         
+        /* 隱藏所有原生的數字上下按鈕 (Spinners) */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
         /* --- 登入畫面 (奢華毛玻璃感) --- */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 32, 56, 0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { width: 400px; padding: 60px 50px; background: rgba(255, 255, 255, 0.95); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border-top: 4px solid var(--gold); text-align: center; }
@@ -135,7 +145,7 @@
         .toggle-btn:hover { color: var(--primary); }
 
         /* --- 高級按鈕系統 --- */
-        button { font-family: 'Montserrat', 'Noto Sans TC', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: none; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: 0.1em; text-transform: uppercase;}
+        button { font-family: 'Montserrat', 'Noto Sans TC', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: none; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1;}
         
         .btn-login { background: var(--primary); color: white; height: 42px; padding: 0 25px; }
         .btn-login:hover { background: var(--primary-light); box-shadow: 0 4px 12px rgba(11, 32, 56, 0.2); transform: translateY(-1px); }
@@ -152,11 +162,13 @@
         .btn-update { background: transparent; border: 1px solid var(--accent); font-size: 11px; color: var(--accent); height: 30px; padding: 0 12px; border-radius: 4px;}
         .btn-update:hover { background: rgba(197, 168, 128, 0.15); color: var(--primary) !important; border-color: var(--gold) !important; }
         
-        .btn-outline-warning { background: transparent; border: 1px solid var(--waitlist); font-size: 11px; color: var(--waitlist); height: 30px; padding: 0 12px; border-radius: 4px;}
-        .btn-outline-warning:hover { background: var(--waitlist); color: white; }
+        /* 取消同房按鈕的高端色彩學配色 (溫潤琥珀警示色) */
+        .btn-outline-warning { background: #FFF4E6; border: 1px solid #FBD0A2; font-size: 11px; color: #C25E03; height: 30px; padding: 0 12px; border-radius: 4px; transition:0.3s; font-weight: 600;}
+        .btn-outline-warning:hover { background: #FDE0C1; color: #9A4900; border-color: #F5B880; }
 
-        .btn-batch { background: var(--gold); font-size: 11px; color: var(--primary); height: 32px; padding: 0 15px; font-weight: 700; border-radius: 4px;}
-        .btn-batch:hover { background: #D4B995; box-shadow: 0 2px 8px rgba(197, 168, 128, 0.4);}
+        /* 修改: 批次修改儲存按鈕的專業信賴感 (頂級海洋藍 Sky Blue Gradient) */
+        .btn-batch { background: linear-gradient(135deg, #0284C7, #0369A1); font-size: 11px; color: #FFFFFF; height: 32px; padding: 0 15px; font-weight: 600; border-radius: 4px; box-shadow: 0 4px 10px rgba(3, 105, 161, 0.2); border: 1px solid #0369A1; letter-spacing:0.1em; transition: 0.3s;}
+        .btn-batch:hover { background: linear-gradient(135deg, #0369A1, #075985); box-shadow: 0 6px 15px rgba(3, 105, 161, 0.35); transform: translateY(-1px);}
         
         /* --- 列表與表格 (Premium Data Grid) --- */
         .search-bar { display: flex; gap: 20px; margin-bottom: 30px; background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(11, 32, 56, 0.02); align-items: flex-end; flex-wrap:wrap;}
@@ -184,6 +196,10 @@
         .td-input[readonly]:not(.td-readonly) { cursor: pointer; }
         .td-input[readonly]:not(.td-readonly):hover { background-color: rgba(13, 148, 136, 0.05); border: 1px dashed var(--accent); }
         
+        /* 費用欄位的文字與底色微調 (深古銅金 + 珍珠暖白) */
+        .adv-input { color: #8A6427 !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif; background-color: #FCFAF5 !important;}
+        .adv-input:focus { background-color: #FFFFFF !important; box-shadow: 0 0 0 2px rgba(138, 100, 39, 0.1) !important; border-color: #C5A880 !important;}
+
         /* 狀態標籤 */
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.2);}
         .dot-normal { background-color: var(--success); } .dot-cancel { background-color: var(--danger); } .dot-waitlist { background-color: var(--waitlist); }
@@ -234,6 +250,12 @@
         .modal-btn-cancel:hover { background: #E2E8F0; }
         .modal-btn-confirm { background: var(--primary); color: white; font-weight: 600;}
 
+        /* Modal Tabs for Toggle Column Modal */
+        .modal-tabs { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: none; }
+        .modal-tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-light); transition: 0.3s; background: var(--sys-bg); border-radius: 8px; border: 1px solid var(--border); }
+        .modal-tab:hover { background: #E2E8F0; color: var(--primary); }
+        .modal-tab.active { background: var(--primary); color: var(--white); border-color: var(--primary); box-shadow: 0 4px 12px rgba(11, 32, 56, 0.15); }
+
         .detail-modal-box { width: 600px; text-align: left; background: var(--white); border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); padding: 40px; transform: translateY(20px); transition: all 0.3s ease; }
         .modal-overlay.show .detail-modal-box { transform: translateY(0); }
         .detail-pre { background: var(--sys-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; color: var(--text-main); max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; line-height: 1.6;}
@@ -251,7 +273,8 @@
         .crown-icon.is-leader { display: inline-block; filter: grayscale(0); opacity: 1; transform: scale(1.1); }
         .current-tag-text { font-size: 10px; color: var(--text-light); margin-left: 8px; background: var(--sys-bg); padding: 2px 6px; border-radius: 4px;}
 
-        #col-toggle-list label { padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: 0.2s;}
+        /* 修改：顯示/隱藏 細項費用 行高與間距縮小 */
+        #col-toggle-list label { padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s;}
         #col-toggle-list label:hover { background: var(--sys-bg); color: var(--primary); }
 
         #page-add .h-jgd, 
@@ -294,12 +317,18 @@
 </div>
 
 <div id="col-toggle-modal" class="modal-overlay">
-    <div class="modal-box" style="width: 850px; max-width:95vw; text-align: left;">
-        <div class="modal-title">隱藏表頭設定</div>
-        <div class="modal-msg" style="margin-bottom:20px;">請勾選欲「隱藏」的欄位：</div>
-        <div id="col-toggle-list" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; max-height:350px; overflow-y:auto; margin-bottom:25px; border:1px solid var(--border); border-radius:8px; padding:20px; background:var(--sys-bg);"></div>
+    <div class="modal-box" style="width: 1000px; max-width:95vw; text-align: left;">
+        <div class="modal-tabs">
+            <div class="modal-tab active" id="tab-show-cols" onclick="switchColModalTab('show')">顯示表頭設定</div>
+            <div class="modal-tab" id="tab-hide-cols" onclick="switchColModalTab('hide')">隱藏表頭設定</div>
+        </div>
+        <div class="modal-msg" id="col-toggle-msg" style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <span>請勾選欲「顯示」的欄位：</span>
+            <button id="btn-toggle-all-cols" type="button" style="height:28px; font-size:12px; padding:0 15px; background:#E2E8F0; color:#64748B; border:none; border-radius:14px; font-weight:600; cursor:pointer; transition:0.3s;" onclick="toggleAllColCheckboxes()">全選</button>
+        </div>
+        <div id="col-toggle-list" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; max-height:350px; overflow-y:auto; margin-bottom:25px; border:1px solid var(--border); border-radius:8px; padding:15px; background:var(--sys-bg);"></div>
         <div class="modal-actions">
-            <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="resetColToggle()">清空篩選</button>
+            <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="resetColToggle()">恢復預設 (顯示全部)</button>
             <button class="modal-btn modal-btn-confirm" onclick="applyColToggle()">確認設定</button>
         </div>
     </div>
@@ -355,7 +384,7 @@
         </div>
         <div class="input-group" id="cancel-amt-box" style="display:none; text-align:left; margin-top:15px;">
             <label>名義變更金額 (必填)</label>
-            <input type="number" id="cancel-amount" placeholder="請輸入變更金額">
+            <input type="text" id="cancel-amount" placeholder="請輸入變更金額" onfocus="unformatNum(this)" onblur="formatNumInput(this)">
         </div>
         <div class="input-group" style="text-align:left; margin-top: 15px;">
             <label>備註</label>
@@ -515,13 +544,13 @@
                         <option value="已取消">已取消訂單</option>
                     </select>
                 </div>
-                <button type="button" class="btn-login" style="width: 100px; border-radius:6px;" onclick="searchList()">SEARCH</button>
+                <button type="button" class="btn-login" style="width: 100px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" onclick="searchList()">SEARCH</button>
                 
-                <div style="margin-left: auto; display:flex; gap:12px;">
-                    <button type="button" class="btn-login" style="background:var(--accent);" onclick="openManagerModal('群組備註')">群組管理</button>
-                    <button type="button" class="btn-login" style="background:var(--primary-light);" onclick="openManagerModal('同房註記')">同房管理</button>
-                    <button type="button" style="background:var(--white); border:1px solid var(--primary); color:var(--primary); height:42px; padding:0 15px;" onclick="openColToggleModal()">顯示/隱藏 細項費用</button>
-                    <button type="button" style="background:var(--white); border:1px solid var(--success); color:var(--success); height:42px; padding:0 15px;" onclick="exportExcel()">匯出 EXCEL</button>
+                <div style="margin-left: auto; display:flex; gap:12px; align-items:center;">
+                    <button type="button" class="btn-login" style="background:var(--accent); display:inline-flex; align-items:center; justify-content:center; line-height:1;" onclick="openManagerModal('群組備註')">群組管理</button>
+                    <button type="button" class="btn-login" style="background:var(--primary-light); display:inline-flex; align-items:center; justify-content:center; line-height:1;" onclick="openManagerModal('同房註記')">同房管理</button>
+                    <button type="button" style="background:var(--white); border:1px solid var(--primary); color:var(--primary); height:42px; padding:0 15px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" onclick="openColToggleModal()">顯示/隱藏 欄位</button>
+                    <button type="button" style="background:var(--white); border:1px solid var(--success); color:var(--success); height:42px; padding:0 15px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" onclick="exportExcel()">匯出 EXCEL</button>
                 </div>
             </div>
 
@@ -580,11 +609,35 @@
 </div>
 
 <script>
+    // 價格格式化共用函式
+    function pNum(val) {
+        if (val === undefined || val === null || val === '') return 0;
+        return Number(String(val).replace(/,/g, '')) || 0;
+    }
+
+    function fmtNum(val) {
+        if (val === undefined || val === null || val === '') return "0";
+        let num = Number(String(val).replace(/,/g, ''));
+        if (isNaN(num)) return "0";
+        return num.toLocaleString('en-US');
+    }
+
+    function formatNumInput(input) {
+        if (input.value === "" || input.value === "-") return;
+        input.value = fmtNum(input.value);
+    }
+
+    function unformatNum(input) {
+        if (input.value === "0") { input.value = ""; return; }
+        input.value = String(input.value).replace(/,/g, '');
+        input.select();
+    }
+
     function getCurrentYYYYMM() {
         const now = new Date();
         return now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0');
     }
-   
+    
     function fmtDate(val) {
         if (!val) return "";
         let str = String(val);
@@ -780,17 +833,17 @@
         const groupCode = document.getElementById('global-groupCode').value.trim();
         let defs = window.voyageDefaults[groupCode];
         if (defs) {
-            block.querySelector('.h-portFee').value = defs.portFee;
-            block.querySelector('.h-tips').value = defs.tips;
-            block.querySelector('.h-intlTax').value = defs.intlTax;
-            block.querySelector('.h-alaskaTax').value = defs.alaskaTax;
+            block.querySelector('.h-portFee').value = fmtNum(defs.portFee);
+            block.querySelector('.h-tips').value = fmtNum(defs.tips);
+            block.querySelector('.h-intlTax').value = fmtNum(defs.intlTax);
+            block.querySelector('.h-alaskaTax').value = fmtNum(defs.alaskaTax);
             if (defs.boardPort !== undefined && defs.boardPort !== "") block.querySelector('.p-board-port').value = defs.boardPort;
             if (defs.offPort !== undefined && defs.offPort !== "") block.querySelector('.p-off-port').value = defs.offPort;
         } else {
-            block.querySelector('.h-portFee').value = 0;
-            block.querySelector('.h-tips').value = 0;
-            block.querySelector('.h-intlTax').value = 0;
-            block.querySelector('.h-alaskaTax').value = 0;
+            block.querySelector('.h-portFee').value = "0";
+            block.querySelector('.h-tips').value = "0";
+            block.querySelector('.h-intlTax').value = "0";
+            block.querySelector('.h-alaskaTax').value = "0";
             block.querySelector('.p-board-port').value = "Yokohama";
             block.querySelector('.p-off-port').value = "Keelung";
         }
@@ -868,9 +921,9 @@
         if(lookupKey !== lastLookup) { 
             let pd = priceDict[lookupKey];
             if(pd) { 
-                block.querySelector('.calc-sf').value = pd.sfPrice;
+                block.querySelector('.calc-sf').value = fmtNum(pd.sfPrice);
                 if (!window.voyageDefaults || !window.voyageDefaults[groupCode]) {
-                    block.querySelector('.h-portFee').value = pd.portTax;
+                    block.querySelector('.h-portFee').value = fmtNum(pd.portTax);
                 }
             } else { 
                 block.querySelector('.calc-sf').value = "0";
@@ -878,20 +931,21 @@
             block.setAttribute('data-last-lookup', lookupKey);
         }
 
-        let sf = Number(block.querySelector('.calc-sf').value) || 0; 
-        let jgd = Number(block.querySelector('.h-jgd').value) || 0;
-        let agtd = Number(block.querySelector('.h-agtd').value) || 0;
-        let subA = Number(block.querySelector('.h-subA').value) || 0; 
-        let subB = Number(block.querySelector('.h-subB').value) || 0;
-        let toilet = Number(block.querySelector('.h-toilet').value) || 0;
-        let intlTax = Number(block.querySelector('.h-intlTax').value) || 0; 
-        let visa = Number(block.querySelector('.h-alaskaTax').value) || 0;
-        let accRoom = Number(block.querySelector('.h-accRoom').value) || 0;
-        let upgRoom = Number(block.querySelector('.h-upgRoom').value) || 0; 
-        let portFee = Number(block.querySelector('.h-portFee').value) || 0;
-        let tips = Number(block.querySelector('.h-tips').value) || 0;
-        let otherFee = Number(block.querySelector('.h-otherFee').value) || 0;
-        let posterDiscount = Number(block.querySelector('.h-poster').value) || 0;
+        let sf = pNum(block.querySelector('.calc-sf').value); 
+        let jgd = pNum(block.querySelector('.h-jgd').value);
+        let agtd = pNum(block.querySelector('.h-agtd').value);
+        let subA = pNum(block.querySelector('.h-subA').value); 
+        let subB = pNum(block.querySelector('.h-subB').value);
+        let toilet = pNum(block.querySelector('.h-toilet').value);
+        let intlTax = pNum(block.querySelector('.h-intlTax').value); 
+        let visa = pNum(block.querySelector('.h-alaskaTax').value);
+        let accRoom = pNum(block.querySelector('.h-accRoom').value);
+        let upgRoom = pNum(block.querySelector('.h-upgRoom').value); 
+        let portFee = pNum(block.querySelector('.h-portFee').value);
+        let tips = pNum(block.querySelector('.h-tips').value);
+        let otherFee = pNum(block.querySelector('.h-otherFee').value);
+        let posterDiscount = pNum(block.querySelector('.h-poster').value);
+        
         const isInside = fullRoomType.includes("內艙");
         const isSS = /SS/i.test(groupCode);
         const commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15);
@@ -899,14 +953,14 @@
         
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
-        block.querySelector('.calc-total').value = baseTotal;
+        block.querySelector('.calc-total').value = fmtNum(baseTotal);
         let commission = Math.round(commBase * commRate);
-        block.querySelector('.calc-comm').value = commission;
+        block.querySelector('.calc-comm').value = fmtNum(commission);
         let setPay = baseTotal - commission;
         
         let childRemark = block.querySelector('.p-child-remark') ? block.querySelector('.p-child-remark').value : "";
         if (childRemark === "2-6歲") { setPay = 0; } else if (childRemark === "7-12歲") { setPay = Math.round(setPay * 0.1); }
-        block.querySelector('.calc-set').value = setPay;
+        block.querySelector('.calc-set').value = fmtNum(setPay);
     }
 
     function addPassenger() {
@@ -965,7 +1019,7 @@
             <div class="advanced-fields" id="advanced-${num}">
                 <div class="grid-4">
                     <div class="input-group"><label>特殊需求</label><input type="text" class="p-special-req"></div>
-                    <div class="input-group"><label>預購 (5萬)</label><input type="number" class="p-deposit" value="0"></div>
+                    <div class="input-group"><label>預購 (5萬)</label><input type="text" class="p-deposit" value="0" onfocus="unformatNum(this)" onblur="formatNumInput(this)"></div>
                     <div class="input-group"><label>孩童備註</label><select class="p-child-remark" onchange="autoCalcPrice(${num})">
                         <option value="">無</option><option value="2-6歲">2-6歲 (SET 0)</option><option value="7-12歲">7-12歲 (SET 10%)</option>
                     </select></div>
@@ -977,23 +1031,23 @@
                 <div class="section-title" style="margin-top:0; margin-bottom:20px; border-left-color:var(--accent); color:var(--primary); font-size:12px;">▍ 費用即時計算區</div>
                 <div class="grid-5" style="margin-bottom: 15px;">
                     <div class="input-group"><label>SF船費</label><input type="text" class="calc-sf" readonly></div>
-                    <div class="input-group"><label>港務費 </label><input type="number" class="h-portFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>小費 </label><input type="number" class="h-tips" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數) </label><input type="number" class="h-jgd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數) </label><input type="number" class="h-agtd" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>港務費 </label><input type="text" class="h-portFee" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>小費 </label><input type="text" class="h-tips" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">JG D (填正數) </label><input type="text" class="h-jgd" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">AGT D (填正數) </label><input type="text" class="h-agtd" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 15px;">
-                    <div class="input-group"><label>下鋪A</label><input type="number" class="h-subA" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>下鋪B</label><input type="number" class="h-subB" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>免治馬桶</label><input type="number" class="h-toilet" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>國際旅客稅</label><input type="number" class="h-intlTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>阿拉斯加稅</label><input type="number" class="h-alaskaTax" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>下鋪A</label><input type="text" class="h-subA" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>下鋪B</label><input type="text" class="h-subB" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>免治馬桶</label><input type="text" class="h-toilet" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>國際旅客稅</label><input type="text" class="h-intlTax" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>阿拉斯加稅</label><input type="text" class="h-alaskaTax" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 25px;">
-                    <div class="input-group"><label>無障礙房型</label><input type="number" class="h-accRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>房型升等</label><input type="number" class="h-upgRoom" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>其他追加費用</label><input type="number" class="h-otherFee" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label style="color:var(--danger);">海報志工優惠折扣金 (填正數)</label><input type="number" class="h-poster" value="0" onkeyup="autoCalcPrice(${num})" oninput="autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>無障礙房型</label><input type="text" class="h-accRoom" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>房型升等</label><input type="text" class="h-upgRoom" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>其他追加費用</label><input type="text" class="h-otherFee" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label style="color:var(--danger);">海報志工優惠折扣金 (填正數)</label><input type="text" class="h-poster" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                 </div>
                 <div class="cost-calc-grid grid-4">
                     <div class="input-group"><label>基本旅費總價</label><input type="text" class="calc-total" readonly style="font-weight:700; color:var(--white);"></div>
@@ -1054,13 +1108,13 @@
             finalData.push({
                 groupCode: groupCode, operatorSales: b.querySelector('.p-sales').value, status: b.querySelector('.p-waitlist').checked ? "候補" : "正常", roomGroup: b.querySelector('.p-room-id').value, orderId: b.querySelector('.p-order-id').value,
                 name: b.querySelector('.p-name').value, ename: b.querySelector('.p-ename').value.toUpperCase(), gender: b.querySelector('.p-gender').value, birth: b.querySelector('.p-birth').value,
-                source: b.querySelector('.p-source').value, oldCustomer: b.querySelector('.p-old-customer').value, deposit: b.querySelector('.p-deposit').value,
+                source: b.querySelector('.p-source').value, oldCustomer: b.querySelector('.p-old-customer').value, deposit: pNum(b.querySelector('.p-deposit').value),
                 roomType: b.querySelector('.p-room').value, promotion: b.querySelector('.p-promo').value, boardPort: b.querySelector('.p-board-port').value, offPort: b.querySelector('.p-off-port').value,
                 specialReq: b.querySelector('.p-special-req').value, childRemark: b.querySelector('.p-child-remark').value, otherRemark: b.querySelector('.p-other-remark').value, promoExtras: b.querySelector('.p-promo-extras').value, couponDeposit: b.querySelector('.p-coupon-dep').value, couponVoucher: b.querySelector('.p-coupon-vou').value,
-                portFee: b.querySelector('.h-portFee').value, tips: b.querySelector('.h-tips').value, jgd: b.querySelector('.h-jgd').value, agtD: b.querySelector('.h-agtd').value,
-                subA: b.querySelector('.h-subA').value, subB: b.querySelector('.h-subB').value, toilet: b.querySelector('.h-toilet').value, intlTax: b.querySelector('.h-intlTax').value, visa: b.querySelector('.h-alaskaTax').value, accRoom: b.querySelector('.h-accRoom').value, upgRoom: b.querySelector('.h-upgRoom').value,
-                otherFee: b.querySelector('.h-otherFee').value, posterDiscount: b.querySelector('.h-poster').value,
-                sf: b.querySelector('.calc-sf').value, totalDirect: b.querySelector('.calc-total').value, commRateStr: b.querySelector('.calc-comm-rate').value, commission: b.querySelector('.calc-comm').value, setPay: b.querySelector('.calc-set').value
+                portFee: pNum(b.querySelector('.h-portFee').value), tips: pNum(b.querySelector('.h-tips').value), jgd: pNum(b.querySelector('.h-jgd').value), agtD: pNum(b.querySelector('.h-agtd').value),
+                subA: pNum(b.querySelector('.h-subA').value), subB: pNum(b.querySelector('.h-subB').value), toilet: pNum(b.querySelector('.h-toilet').value), intlTax: pNum(b.querySelector('.h-intlTax').value), visa: pNum(b.querySelector('.h-alaskaTax').value), accRoom: pNum(b.querySelector('.h-accRoom').value), upgRoom: pNum(b.querySelector('.h-upgRoom').value),
+                otherFee: pNum(b.querySelector('.h-otherFee').value), posterDiscount: pNum(b.querySelector('.h-poster').value),
+                sf: pNum(b.querySelector('.calc-sf').value), totalDirect: pNum(b.querySelector('.calc-total').value), commRateStr: b.querySelector('.calc-comm-rate').value, commission: pNum(b.querySelector('.calc-comm').value), setPay: pNum(b.querySelector('.calc-set').value)
             });
         });
         
@@ -1166,41 +1220,24 @@
         renderList(); 
     }
 
-    async function batchUpdateFee(type) {
-        let fee = await customPrompt(`批次更新【${type}】`, `請輸入統一的「${type}」金額：`, false);
-        if (fee === null || fee.trim() === "") return; 
-        if (isNaN(fee)) return customAlert("請輸入有效的數字！", "error");
-        let code = await customPrompt(`安全驗證`, `請輸入管理員確認碼：`, true);
-        if (code === null) return; 
-        if (code !== "0327") return customAlert("確認碼錯誤，操作已取消。", "error");
-        let updatedCount = 0;
-        document.querySelectorAll('.adv-input[data-col="' + type + '"]').forEach(input => { 
-            input.value = fee; 
-            let no = input.closest('tr').id.replace('row-', ''); 
-            calcGridRow(no); 
-            updatedCount++;
-        });
-        customAlert(`驗證成功！已將畫面上 ${updatedCount} 位旅客的「${type}」更新為 ${fee}。\n\n⚠️ 請記得點擊右側的【修改儲存】按鈕，正式上傳至資料庫！`, "success");
-    }
-
     function calcGridRow(no) {
         let tr = document.getElementById('row-' + no);
         if(!tr) return;
-        let sf = Number(tr.querySelector('.adv-input[data-col="SF船費"]')?.value) || 0; 
-        let jgd = Number(tr.querySelector('.adv-input[data-col="JGD"]')?.value) || 0; 
-        let agtd = Number(tr.querySelector('.adv-input[data-col="AGTD"]')?.value) || 0;
-        let subA = Number(tr.querySelector('.adv-input[data-col="下鋪指定A"]')?.value) || 0; 
-        let subB = Number(tr.querySelector('.adv-input[data-col="下鋪指定B"]')?.value) || 0; 
-        let toilet = Number(tr.querySelector('.adv-input[data-col="免治馬桶"]')?.value) || 0;
-        let intlTax = Number(tr.querySelector('.adv-input[data-col="國際旅客稅"]')?.value) || 0; 
-        let visa = Number(tr.querySelector('.adv-input[data-col="阿拉斯加稅"]')?.value) || 0; 
-        let accRoom = Number(tr.querySelector('.adv-input[data-col="無障礙房型"]')?.value) || 0;
-        let upgRoom = Number(tr.querySelector('.adv-input[data-col="房型升等"]')?.value) || 0; 
-        let portFee = Number(tr.querySelector('.adv-input[data-col="港務費"]')?.value) || 0; 
-        let tips = Number(tr.querySelector('.adv-input[data-col="小費"]')?.value) || 0;
-        let otherFee = Number(tr.querySelector('.adv-input[data-col="其他追加費用"]')?.value) || 0;
-        let posterDiscount = Number(tr.querySelector('.adv-input[data-col="海報志工優惠折扣金"]')?.value) || 0;
-        let nameChangeAmt = Number(tr.querySelector('.edit-nameChange')?.value) || 0;
+        let sf = pNum(tr.querySelector('.adv-input[data-col="SF船費"]')?.value); 
+        let jgd = pNum(tr.querySelector('.adv-input[data-col="JGD"]')?.value); 
+        let agtd = pNum(tr.querySelector('.adv-input[data-col="AGTD"]')?.value);
+        let subA = pNum(tr.querySelector('.adv-input[data-col="下鋪指定A"]')?.value); 
+        let subB = pNum(tr.querySelector('.adv-input[data-col="下鋪指定B"]')?.value); 
+        let toilet = pNum(tr.querySelector('.adv-input[data-col="免治馬桶"]')?.value);
+        let intlTax = pNum(tr.querySelector('.adv-input[data-col="國際旅客稅"]')?.value); 
+        let visa = pNum(tr.querySelector('.adv-input[data-col="阿拉斯加稅"]')?.value); 
+        let accRoom = pNum(tr.querySelector('.adv-input[data-col="無障礙房型"]')?.value);
+        let upgRoom = pNum(tr.querySelector('.adv-input[data-col="房型升等"]')?.value); 
+        let portFee = pNum(tr.querySelector('.adv-input[data-col="港務費"]')?.value); 
+        let tips = pNum(tr.querySelector('.adv-input[data-col="小費"]')?.value);
+        let otherFee = pNum(tr.querySelector('.adv-input[data-col="其他追加費用"]')?.value);
+        let posterDiscount = pNum(tr.querySelector('.adv-input[data-col="海報志工優惠折扣金"]')?.value);
+        let nameChangeAmt = pNum(tr.querySelector('.edit-nameChange')?.value);
         let room = tr.querySelector('.edit-room').value || "";
         let groupCode = document.getElementById('search-groupCode').value.trim();
         let isInside = room.includes("內艙");
@@ -1209,10 +1246,10 @@
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
         let commBase = sf - jgd - agtd; 
-        tr.querySelector('.edit-tot').value = baseTotal; 
+        tr.querySelector('.edit-tot').value = fmtNum(baseTotal); 
         let comm = Math.round(commBase * commRate); 
-        tr.querySelector('.edit-comm').value = comm;
-        tr.querySelector('.edit-set').value = baseTotal - comm + nameChangeAmt;
+        tr.querySelector('.edit-comm').value = fmtNum(comm);
+        tr.querySelector('.edit-set').value = fmtNum(baseTotal - comm + nameChangeAmt);
     }
 
     function fetchDictForGridRow(no) {
@@ -1224,8 +1261,8 @@
         let lookupKey = promo + "-" + groupCode + "-" + roomCode; let pd = priceDict[lookupKey];
         if(pd) { 
             let sfNode = tr.querySelector('.adv-input[data-col="SF船費"]');
-            if(sfNode) sfNode.value = pd.sfPrice; 
-            let taxNode = tr.querySelector('.adv-input[data-col="港務費"]'); if(taxNode) taxNode.value = pd.portTax;
+            if(sfNode) sfNode.value = fmtNum(pd.sfPrice); 
+            let taxNode = tr.querySelector('.adv-input[data-col="港務費"]'); if(taxNode) taxNode.value = fmtNum(pd.portTax);
         } 
         calcGridRow(no);
     }
@@ -1281,13 +1318,13 @@
                 headHtml += `<th style="width:${w};">${displayC}</th>`;
             }
         });
+        
+        // 費用欄位表頭：深海藍配上香檳金字體，底下加上細微的古銅金底線增添質感
         advCols.forEach(c => { 
             let advWidth = "90px";
             if (c === "SF船費" || c === "JGD") { advWidth = "120px"; }
             
-            if (c === "港務費" || c === "小費") {
-                headHtml += `<th class="adv-col" style="width:${advWidth}; cursor:pointer; color:var(--gold); text-decoration:underline;" onclick="batchUpdateFee('${c}')" title="點擊以批次更新所有旅客的${c}">${c} ✎</th>`;
-            } else { headHtml += `<th class="adv-col" style="width:${advWidth}; color:var(--gold);">${c}</th>`; }
+            headHtml += `<th class="adv-col" style="width:${advWidth}; color:#EAD6A3; font-weight:500; letter-spacing:0.05em; border-bottom: 2px solid #C4A767;">${c}</th>`;
         });
         headHtml += '<th style="width:75px; border-left:1px solid rgba(255,255,255,0.1); text-align:center;">同房管理</th>';
         headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">修改儲存</button></th></tr>';
@@ -1517,23 +1554,22 @@
                 <td><select class="td-input edit-room" onchange="fetchDictForGridRow('${item.no}')"><option value="${item.roomType}" selected>${item.roomType}</option>${roomOptionsHTML.replace(`<option value="">-- 請選擇房型 --</option>`, '')}</select></td>
                 <td><input type="text" class="td-input edit-bp" value="${getVal(item, "登船港")}" ${lockAttr}></td>
                 <td><input type="text" class="td-input edit-op" value="${getVal(item, "離船港")}" ${lockAttr}></td>
-                <td><input type="text" class="td-input td-readonly edit-tot" value="${getVal(item, "基本旅費總價")}" readonly></td>
+                <td><input type="text" class="td-input td-readonly edit-tot" value="${fmtNum(getVal(item, "基本旅費總價"))}" readonly></td>
                 <td><input type="text" class="td-input td-readonly edit-crate" value="${getVal(item, "佣金%")}" readonly style="color:var(--text-light); font-weight:normal;"></td>
-                <td><input type="text" class="td-input td-readonly edit-comm" value="${getVal(item, "佣金")}" readonly style="color:var(--danger);"></td>
-                <td><input type="number" class="td-input edit-nameChange" value="${getVal(item, "名義變更金額")}" oninput="calcGridRow('${item.no}')" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"></td>
-                <td><input type="text" class="td-input td-readonly edit-set" value="${getVal(item, "SET應付")}" readonly style="color:var(--accent);"></td>
+                <td><input type="text" class="td-input td-readonly edit-comm" value="${fmtNum(getVal(item, "佣金"))}" readonly style="color:var(--danger);"></td>
+                <td><input type="text" class="td-input edit-nameChange" value="${fmtNum(getVal(item, "名義變更金額"))}" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"></td>
+                <td><input type="text" class="td-input td-readonly edit-set" value="${fmtNum(getVal(item, "SET應付"))}" readonly style="color:var(--accent);"></td>
                 <td><input type="text" class="td-input edit-operator" value="${getVal(item, "業務")}" ${lockAttr}></td>
                 <td><input type="text" class="td-input edit-orderId" value="${getVal(item, "訂編")}" ${lockAttr}></td>
             `;
 
             advCols.forEach(c => { 
                 let extraAttr = ''; let extraClass = '';
-                if (c === "港務費" || c === "小費") { extraAttr = `type="number" readonly`; extraClass = ` td-readonly`; }
-                else if (["下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { 
-                    extraAttr = `type="number" oninput="calcGridRow('${item.no}')" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true); calcGridRow('${item.no}');" title="雙擊以編輯"`; 
+                if (["港務費", "小費", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { 
+                    extraAttr = `type="text" oninput="calcGridRow('${item.no}')" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"`; 
                 }
                 else { extraAttr = `type="text" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"`; }
-                html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${getVal(item, c)}" ${extraAttr}></td>`;
+                html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${fmtNum(getVal(item, c))}" ${extraAttr}></td>`;
             });
 
             html += `
@@ -1549,30 +1585,91 @@
             `;
             tr.innerHTML = html; listBody.appendChild(tr);
         });
-        applyColToggle(); 
+        
+        // Use the smart apply logic so it correctly sets DOM state based on hiddenCols
+        const rows = document.querySelectorAll('#dataTable tr');
+        rows.forEach(tr => {
+            Array.from(tr.children).forEach((td, idx) => { if(td.tagName === 'TH' || td.tagName === 'TD') td.style.display = hiddenCols.includes(idx) ? 'none' : 'table-cell'; });
+        });
     }
 
-    function openColToggleModal() {
+    let currentColToggleMode = 'show'; // 'show' or 'hide'
+
+    function switchColModalTab(mode) {
+        currentColToggleMode = mode;
+        document.getElementById('tab-show-cols').classList.toggle('active', mode === 'show');
+        document.getElementById('tab-hide-cols').classList.toggle('active', mode === 'hide');
+        document.querySelector('#col-toggle-msg span').innerText = mode === 'show' ? '請勾選欲「顯示」的欄位：' : '請勾選欲「隱藏」的欄位：';
+        renderColToggleList();
+        
+        let btn = document.getElementById('btn-toggle-all-cols');
+        if(btn) {
+            btn.style.background = '#E2E8F0';
+            btn.style.color = '#64748B';
+        }
+    }
+
+    function renderColToggleList() {
         const list = document.getElementById('col-toggle-list');
         list.innerHTML = "";
         document.querySelectorAll('#list-head th:not(.sticky-1):not(.sticky-2):not(.sticky-3)').forEach((th, idx) => {
             let text = th.innerText.replace(' ✎', '').replace(' ▼', '').trim();
             if(text && !text.includes("同房管理") && !text.includes("操作")) {
-                let isChecked = hiddenCols.includes(idx + 3) ? "checked" : "";
-                list.innerHTML += `<label><input type="checkbox" class="col-toggle-cb" data-idx="${idx + 3}" ${isChecked}> ${text}</label>`;
+                let isHidden = hiddenCols.includes(idx + 3);
+                let isChecked = (currentColToggleMode === 'show') ? !isHidden : isHidden;
+                list.innerHTML += `<label><input type="checkbox" class="col-toggle-cb" data-idx="${idx + 3}" ${isChecked ? "checked" : ""}> ${text}</label>`;
             }
         });
+    }
+
+    function openColToggleModal() {
+        switchColModalTab('show'); // 預設顯示"顯示表頭設定"
         document.getElementById('col-toggle-modal').classList.add('show');
     }
+
+    function toggleAllColCheckboxes() {
+        let btn = document.getElementById('btn-toggle-all-cols');
+        let cbs = document.querySelectorAll('.col-toggle-cb');
+        let allChecked = Array.from(cbs).every(cb => cb.checked);
+        let targetState = !allChecked;
+        cbs.forEach(cb => cb.checked = targetState);
+        
+        if (targetState) {
+            btn.style.background = 'var(--text-main)'; // 黑色
+            btn.style.color = '#FFFFFF';
+        } else {
+            btn.style.background = '#E2E8F0'; // 灰色
+            btn.style.color = '#64748B';
+        }
+    }
+
     function applyColToggle() {
-        hiddenCols = Array.from(document.querySelectorAll('.col-toggle-cb:checked')).map(cb => parseInt(cb.getAttribute('data-idx')));
+        if (document.getElementById('col-toggle-modal').classList.contains('show')) {
+            let checkedIdxs = Array.from(document.querySelectorAll('.col-toggle-cb:checked')).map(cb => parseInt(cb.getAttribute('data-idx')));
+            let allIdxs = Array.from(document.querySelectorAll('.col-toggle-cb')).map(cb => parseInt(cb.getAttribute('data-idx')));
+            
+            if (currentColToggleMode === 'show') {
+                hiddenCols = allIdxs.filter(idx => !checkedIdxs.includes(idx));
+            } else {
+                hiddenCols = checkedIdxs;
+            }
+        }
+
         const rows = document.querySelectorAll('#dataTable tr');
         rows.forEach(tr => {
             Array.from(tr.children).forEach((td, idx) => { if(td.tagName === 'TH' || td.tagName === 'TD') td.style.display = hiddenCols.includes(idx) ? 'none' : 'table-cell'; });
         });
         document.getElementById('col-toggle-modal').classList.remove('show');
     }
-    function resetColToggle() { document.querySelectorAll('.col-toggle-cb').forEach(cb => cb.checked = false); hiddenCols = []; applyColToggle(); }
+
+    function resetColToggle() { 
+        hiddenCols = []; 
+        const rows = document.querySelectorAll('#dataTable tr');
+        rows.forEach(tr => {
+            Array.from(tr.children).forEach((td, idx) => { if(td.tagName === 'TH' || td.tagName === 'TD') td.style.display = 'table-cell'; });
+        });
+        document.getElementById('col-toggle-modal').classList.remove('show'); 
+    }
 
     function cancelRoomingLocally(no, btn) {
         let tr = document.getElementById('row-' + no);
@@ -1605,32 +1702,45 @@
             const no = tr.id.replace('row-', ''); const orig = window.currentGroupData.find(d => String(d.no) === no); if(!orig) return;
             let fields = {}; let rowChanges = [];
             
-            const check = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
+            const checkStr = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
             
-            check(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
-            check(getVal(orig, "旅客姓名"), tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
-            check(getVal(orig, "NAME"), tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
-            check(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
-            check(fmtDate(getVal(orig, "生日")), tr.querySelector('.edit-birth').value, '生日', '生日');
-            check(getVal(orig, "報名來源"), tr.querySelector('.edit-source').value, '報名來源', '報名來源');
-            check(getVal(orig, "老客"), tr.querySelector('.edit-oldCustomer').value, '老客', '老客');
-            check(getVal(orig, "當月優惠價"), tr.querySelector('.edit-promo').value, '當月優惠價', '當月優惠價');
-            check(getVal(orig, "各種優惠價/船內特典"), tr.querySelector('.edit-promoExtras').value, '各種優惠價/船內特典', '各種優惠價/船內特典');
-            check(getVal(orig, "Coupon船內預存金"), tr.querySelector('.edit-couponDep').value, '預存金', 'Coupon船內預存金');
-            check(getVal(orig, "Coupon船內優惠券"), tr.querySelector('.edit-couponVou').value, '優惠券', 'Coupon船內優惠券');
-            check(orig.roomType || '', tr.querySelector('.edit-room').value, '房型', '房型');
-            check(getVal(orig, "登船港"), tr.querySelector('.edit-bp').value, '登船港', '登船港');
-            check(getVal(orig, "離船港"), tr.querySelector('.edit-op').value, '離船港', '離船港');
-            check(getVal(orig, "基本旅費總價"), tr.querySelector('.edit-tot').value, '基本旅費總價', '基本旅費總價');
-            check(getVal(orig, "佣金%"), tr.querySelector('.edit-crate').value, '佣金%', '佣金%');
-            check(getVal(orig, "佣金"), tr.querySelector('.edit-comm').value, '佣金', '佣金');
-            check(getVal(orig, "名義變更金額"), tr.querySelector('.edit-nameChange').value, '名義變更金', '名義變更金額');
-            check(getVal(orig, "SET應付"), tr.querySelector('.edit-set').value, 'SET應付', 'SET應付');
-            check(getVal(orig, "業務"), tr.querySelector('.edit-operator').value, '業務', '業務');
-            check(getVal(orig, "訂編"), tr.querySelector('.edit-orderId').value, '訂編', '訂編');
-            check(orig.roomGroup || '', tr.querySelector('.edit-roomGroup').value, '同房註記', '同房註記');
+            // 比較數字專用 (轉為純數字後比較，寫入資料庫也是純數字)
+            const checkNum = (origVal, newVal, label, fieldKey) => { 
+                let o = pNum(origVal); let n = pNum(newVal);
+                if (o !== n) { fields[fieldKey] = n; rowChanges.push(`${label} ➔ [${n}]`); } 
+            };
+            
+            checkStr(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
+            checkStr(getVal(orig, "旅客姓名"), tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
+            checkStr(getVal(orig, "NAME"), tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
+            checkStr(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
+            checkStr(fmtDate(getVal(orig, "生日")), tr.querySelector('.edit-birth').value, '生日', '生日');
+            checkStr(getVal(orig, "報名來源"), tr.querySelector('.edit-source').value, '報名來源', '報名來源');
+            checkStr(getVal(orig, "老客"), tr.querySelector('.edit-oldCustomer').value, '老客', '老客');
+            checkStr(getVal(orig, "當月優惠價"), tr.querySelector('.edit-promo').value, '當月優惠價', '當月優惠價');
+            checkStr(getVal(orig, "各種優惠價/船內特典"), tr.querySelector('.edit-promoExtras').value, '各種優惠價/船內特典', '各種優惠價/船內特典');
+            checkStr(getVal(orig, "Coupon船內預存金"), tr.querySelector('.edit-couponDep').value, '預存金', 'Coupon船內預存金');
+            checkStr(getVal(orig, "Coupon船內優惠券"), tr.querySelector('.edit-couponVou').value, '優惠券', 'Coupon船內優惠券');
+            checkStr(orig.roomType || '', tr.querySelector('.edit-room').value, '房型', '房型');
+            checkStr(getVal(orig, "登船港"), tr.querySelector('.edit-bp').value, '登船港', '登船港');
+            checkStr(getVal(orig, "離船港"), tr.querySelector('.edit-op').value, '離船港', '離船港');
+            
+            // 數字欄位比較與清洗
+            checkNum(getVal(orig, "基本旅費總價"), tr.querySelector('.edit-tot').value, '基本旅費總價', '基本旅費總價');
+            checkNum(getVal(orig, "佣金"), tr.querySelector('.edit-comm').value, '佣金', '佣金');
+            checkNum(getVal(orig, "名義變更金額"), tr.querySelector('.edit-nameChange').value, '名義變更金', '名義變更金額');
+            checkNum(getVal(orig, "SET應付"), tr.querySelector('.edit-set').value, 'SET應付', 'SET應付');
+            
+            checkStr(getVal(orig, "佣金%"), tr.querySelector('.edit-crate').value, '佣金%', '佣金%');
+            checkStr(getVal(orig, "業務"), tr.querySelector('.edit-operator').value, '業務', '業務');
+            checkStr(getVal(orig, "訂編"), tr.querySelector('.edit-orderId').value, '訂編', '訂編');
+            checkStr(orig.roomGroup || '', tr.querySelector('.edit-roomGroup').value, '同房註記', '同房註記');
 
-            tr.querySelectorAll('.adv-input').forEach(input => { let c = input.getAttribute('data-col'); check(getVal(orig, c), input.value, c, c); });
+            tr.querySelectorAll('.adv-input').forEach(input => { 
+                let c = input.getAttribute('data-col'); 
+                checkNum(getVal(orig, c), input.value, c, c); 
+            });
+
             if (rowChanges.length > 0) { updates.push({no: no, fields: fields}); changesLog.push(`NO.${no} ${orig.name} (ID: ${orig.id||'--'}) ${rowChanges.join(', ')}`); }
         });
 
@@ -1858,7 +1968,7 @@
         if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
         
         showLoading("PROCESSING...");
-        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: amt, remark: remark }) })
+        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: pNum(amt), remark: remark }) })
         .then(res => res.json()).then(res => { 
             hideLoading(); 
             if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } 
