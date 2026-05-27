@@ -673,14 +673,12 @@
 
     let modalCallback = null;
     
-    // 👑 修復點 2: 完善事件綁定的初始化與解綁邏輯，避免事件被污染
     function showCustomModal(options) {
         document.getElementById('modal-title').innerText = options.title || 'INFORMATION';
         document.getElementById('modal-msg').innerHTML = options.msg.replace(/\n/g, '<br>');
         const btnCancel = document.getElementById('modal-btn-cancel'); 
         const btnConfirm = document.getElementById('modal-btn-confirm');
         
-        // 確保在顯示之前，清除被其他特殊功能 (例如 runValidation) 所強加的事件
         btnCancel.onclick = function() { closeModal(false); };
         btnConfirm.onclick = function() { closeModal(true); };
 
@@ -697,7 +695,6 @@
     
     function closeModal(isConfirm) { 
         document.getElementById('custom-modal').classList.remove('show'); 
-        // 恢復可能的寬度變更 (檢核表單專用)
         document.querySelector('#custom-modal .modal-box').style.width = '';
         document.querySelector('#custom-modal .modal-box').style.maxWidth = '';
 
@@ -886,8 +883,18 @@
 
         let lookupKey = promoCode + "-" + groupCode + "-" + roomCode;
         let lastLookup = block.getAttribute('data-last-lookup');
-        let childRemark = block.querySelector('.p-child-remark') ? block.querySelector('.p-child-remark').value : "";
+        
+        let childRemarkSelect = block.querySelector('.p-child-remark');
+        let childRemark = childRemarkSelect ? childRemarkSelect.value : "";
         let isSingle = fullRoomType.includes("單人");
+        let isDouble = fullRoomType.includes("雙人");
+
+        if (childRemark === "7-12歲" && !isSingle && !isDouble && fullRoomType !== "") {
+            customAlert("7-12歲孩童計價僅適用於「雙人」或「單人」房型！請重新確認房型。", "warning");
+            if (childRemarkSelect) childRemarkSelect.value = "";
+            childRemark = "";
+            block.setAttribute('data-last-lookup', '');
+        }
         
         if(lookupKey !== lastLookup) { 
             let pd = priceDict[lookupKey];
@@ -896,7 +903,8 @@
                 if (childRemark === "2-6歲") {
                     baseSf = 0;
                 } else if (childRemark === "7-12歲") {
-                    baseSf = Math.round(baseSf * (isSingle ? 0.1 : 0.2));
+                    if (isDouble) baseSf = Math.round(baseSf * 0.2);
+                    else if (isSingle) baseSf = Math.round(baseSf * 0.1);
                 }
                 block.querySelector('.calc-sf').value = fmtNum(baseSf);
                 
@@ -912,7 +920,10 @@
             if (pd) {
                 let baseSf = pNum(pd.sfPrice);
                 if (childRemark === "2-6歲") { baseSf = 0; } 
-                else if (childRemark === "7-12歲") { baseSf = Math.round(baseSf * (isSingle ? 0.1 : 0.2)); }
+                else if (childRemark === "7-12歲") {
+                    if (isDouble) baseSf = Math.round(baseSf * 0.2);
+                    else if (isSingle) baseSf = Math.round(baseSf * 0.1);
+                }
                 block.querySelector('.calc-sf').value = fmtNum(baseSf);
             }
         }
@@ -1006,7 +1017,7 @@
                 <div class="grid-4">
                     <div class="input-group"><label>特殊需求</label><input type="text" class="p-special-req"></div>
                     <div class="input-group"><label>預購 (5萬)</label><input type="text" class="p-deposit" value="0" onfocus="unformatNum(this)" onblur="formatNumInput(this)"></div>
-                    <div class="input-group"><label>孩童備註</label><select class="p-child-remark" onchange="block.setAttribute('data-last-lookup', ''); autoCalcPrice(${num})">
+                    <div class="input-group"><label>孩童備註</label><select class="p-child-remark" onchange="document.getElementById('p-block-${num}').setAttribute('data-last-lookup', ''); autoCalcPrice(${num})">
                         <option value="">無</option><option value="2-6歲">2-6歲</option><option value="7-12歲">7-12歲</option>
                     </select></div>
                     <div class="input-group"><label>區段</label><select class="p-segment">
@@ -1289,14 +1300,24 @@
         let roomCode = roomFull;
         let parts = roomFull.split('-'); if(parts.length >= 3) roomCode = parts[parts.length-2].trim(); else if(parts.length === 2) roomCode = parts[1].trim();
         let lookupKey = promo + "-" + groupCode + "-" + roomCode; let pd = priceDict[lookupKey];
+        
+        let origData = window.currentGroupData.find(d => String(d.no) === no);
+        let childVal = origData ? getVal(origData, "孩童備註") : "";
+        let isSingle = roomFull.includes("單人");
+        let isDouble = roomFull.includes("雙人");
+
+        if (childVal === "7-12歲" && !isSingle && !isDouble && roomFull !== "") {
+            customAlert(`NO.${no} 的房型非單人/雙人，無法套用7-12歲計價規則！`, "warning");
+        }
+
         if(pd) { 
             let baseSf = pNum(pd.sfPrice);
-            let origData = window.currentGroupData.find(d => String(d.no) === no);
-            let childVal = origData ? getVal(origData, "孩童備註") : "";
-            let isSingle = roomFull.includes("單人");
             
             if (childVal === "2-6歲") { baseSf = 0; }
-            else if (childVal === "7-12歲") { baseSf = Math.round(baseSf * (isSingle ? 0.1 : 0.2)); }
+            else if (childVal === "7-12歲") {
+                if (isDouble) baseSf = Math.round(baseSf * 0.2);
+                else if (isSingle) baseSf = Math.round(baseSf * 0.1);
+            }
 
             let sfNode = tr.querySelector('.adv-input[data-col="SF船費"]');
             if(sfNode) sfNode.value = fmtNum(baseSf); 
@@ -1323,15 +1344,13 @@
         return firstTag.replace(/\(L\)$/, '');
     }
     
-    // 👑 修復點 1: 確保空白與全程都會被計算，只排除「區段」
     async function promptBatchUpdate(colName) {
         if (colName !== '港務費' && colName !== '小費') return;
-        let val = await customPrompt(`批次修改 ${colName}`, `請輸入新的${colName}數值<br>(註：<span style="color:var(--danger)">自動排除「區段」的旅客</span>)：`);
+        let val = await customPrompt(`批次修改 ${colName}`, `請輸入新的${colName}數值<br>(註：將套用至區段為「全程」或「未填寫」的旅客，<span style="color:var(--danger)">自動排除「區段」</span>)：`);
         if (val === null || val === '') return;
         let numVal = pNum(val);
         document.querySelectorAll('#list-body tr[id^="row-"]').forEach(tr => {
             let seg = tr.querySelector('.edit-segment')?.value;
-            // 只要不是「區段」都會被套用 (亦即套用給「全程」和「空白」)
             if (seg !== '區段') {
                 let input = tr.querySelector(`.adv-input[data-col="${colName}"]`);
                 if (input) {
@@ -1340,7 +1359,7 @@
                 }
             }
         });
-        customAlert(`已套用「${colName}」新數值！\n需點擊右上角【修改儲存】更新`, 'success');
+        customAlert(`已套用「${colName}」新數值至區段為全程或未填寫的旅客！\n請確認無誤後，務必點擊右上角【修改儲存更新】以寫入資料庫。`, 'success');
     }
 
     function renderList() {
@@ -1791,8 +1810,13 @@
                 let expectedSF = pNum(pd.sfPrice);
                 let childVal = getVal(item, "孩童備註");
                 let isSingle = roomFull.includes("單人");
+                let isDouble = roomFull.includes("雙人");
+
                 if (childVal === "2-6歲") { expectedSF = 0; }
-                else if (childVal === "7-12歲") { expectedSF = Math.round(expectedSF * (isSingle ? 0.1 : 0.2)); }
+                else if (childVal === "7-12歲") {
+                    if (isDouble) expectedSF = Math.round(expectedSF * 0.2);
+                    else if (isSingle) expectedSF = Math.round(expectedSF * 0.1);
+                }
                 
                 if (sf !== expectedSF) {
                     issues.push({ col: 'SF船費', actual: `SF船費 ${fmtNum(sf)}`, expected: `SF船費 ${fmtNum(expectedSF)}` });
