@@ -1789,6 +1789,8 @@
         let defOff = defs.offPort || "Keelung";
         let defTips = pNum(defs.tips);
         let defPortFee = pNum(defs.portFee);
+        let defIntlTax = pNum(defs.intlTax);
+        let defAlaskaTax = pNum(defs.alaskaTax);
         
         let errors = [];
         
@@ -1801,17 +1803,18 @@
             let seg = getVal(item, "區段");
             let tips = pNum(getVal(item, "小費"));
             let portFee = pNum(getVal(item, "港務費"));
+            let intlTax = pNum(getVal(item, "國際旅客稅"));
+            let alaskaTax = pNum(getVal(item, "阿拉斯加稅"));
             let sf = pNum(getVal(item, "SF船費"));
             
-            let portMismatch = (bp !== defBoard || op !== defOff);
-            if (portMismatch && seg === "全程") {
-                issues.push({ col: '登離港', actual: `${bp}/${op}`, expected: `${defBoard}/${defOff}` });
-            }
+            let suffix = (seg === "區段") ? " (區段)" : "";
             
-            if (seg === "全程") {
-                if (tips !== defTips) issues.push({ col: '小費', actual: `小費 ${fmtNum(tips)}`, expected: `小費 ${fmtNum(defTips)}` });
-                if (portFee !== defPortFee) issues.push({ col: '港務費', actual: `港務費 ${fmtNum(portFee)}`, expected: `港務費 ${fmtNum(defPortFee)}` });
-            }
+            if (bp !== defBoard) issues.push({ col: '登船港', actual: '登船港 ' + (bp || '(空)') + suffix, expected: '登船港 ' + defBoard });
+            if (op !== defOff) issues.push({ col: '離船港', actual: '離船港 ' + (op || '(空)') + suffix, expected: '離船港 ' + defOff });
+            if (tips !== defTips) issues.push({ col: '小費', actual: '小費 ' + fmtNum(tips) + suffix, expected: '小費 ' + fmtNum(defTips) });
+            if (portFee !== defPortFee) issues.push({ col: '港務費', actual: '港務費 ' + fmtNum(portFee) + suffix, expected: '港務費 ' + fmtNum(defPortFee) });
+            if (intlTax !== defIntlTax) issues.push({ col: '國際旅客稅', actual: '國際旅客稅 ' + fmtNum(intlTax) + suffix, expected: '國際旅客稅 ' + fmtNum(defIntlTax) });
+            if (alaskaTax !== defAlaskaTax) issues.push({ col: '阿拉斯加稅', actual: '阿拉斯加稅 ' + fmtNum(alaskaTax) + suffix, expected: '阿拉斯加稅 ' + fmtNum(defAlaskaTax) });
             
             let promo = getVal(item, "當月優惠價");
             let roomFull = item.roomType || "";
@@ -1873,7 +1876,17 @@
             hideLoading();
 
             let html = `<div style="max-height:500px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--border); border-radius:8px;">
-                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; text-align:left;">
+                    <colgroup>
+                        <col style="width: 80px;">
+                        <col style="width: 80px;">
+                        <col style="width: 90px;">
+                        <col style="width: 15%;">
+                        <col style="width: 15%;">
+                        <col style="width: 130px;">
+                        <col style="width: 130px;">
+                        <col style="width: auto;">
+                    </colgroup>
                     <thead style="position:sticky; top:0; background:var(--primary-light); color:var(--white); z-index:10;">
                         <tr>
                             <th style="padding:10px;">NO</th>
@@ -1895,18 +1908,18 @@
                     else if (issue.status === 'issue') bg = '#FEF2F2';
 
                     html += `<tr id="${issueId}" style="border-bottom:1px solid var(--border); transition:background-color 0.3s; background:${bg};">
-                        <td style="padding:8px 10px; font-weight:600; color:var(--primary);">${e.no}</td>
-                        <td style="padding:8px 10px;">${e.name}</td>
-                        <td style="padding:8px 10px; color:var(--text-light);">${e.id||'--'}</td>
-                        <td style="padding:8px 10px; color:var(--danger); font-weight:600;">${issue.actual}</td>
-                        <td style="padding:8px 10px; color:var(--success); font-weight:600;">${issue.expected}</td>
+                        <td style="padding:8px 10px; font-weight:600; color:var(--primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${e.no}">${e.no}</td>
+                        <td style="padding:8px 10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${e.name}">${e.name}</td>
+                        <td style="padding:8px 10px; color:var(--text-light); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${e.id||'--'}">${e.id||'--'}</td>
+                        <td style="padding:8px 10px; color:var(--danger); font-weight:600; word-break:break-word;">${issue.actual}</td>
+                        <td style="padding:8px 10px; color:var(--success); font-weight:600; word-break:break-word;">${issue.expected}</td>
                         <td style="padding:8px 10px; text-align:center;">
                             <button onclick="markIssueStatus('${issueId}', 'pass', '${e.no}', '${e.name}', '${issue.col}')" style="background:#065F46; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">✅ 排除異常</button>
                         </td>
                         <td style="padding:8px 10px; text-align:center;">
                             <button onclick="markIssueStatus('${issueId}', 'issue', '${e.no}', '${e.name}', '${issue.col}')" style="background:#9F1239; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">❌ 列為問題</button>
                         </td>
-                        <td id="note-${issueId}" style="padding:8px 10px; color:var(--text-light); font-size:11px;">${issue.note || ''}</td>
+                        <td id="note-${issueId}" style="padding:8px 10px; color:var(--text-light); font-size:11px; word-break:break-word;">${issue.note || ''}</td>
                     </tr>`;
                 });
             });
