@@ -1348,7 +1348,7 @@
     
     async function promptBatchUpdate(colName) {
         if (colName !== '港務費' && colName !== '小費') return;
-        let val = await customPrompt(`批次修改 ${colName}`, `請輸入新的${colName}數值<br>(註：將套用至區段為「全程」或「未填寫」的旅客，<span style="color:var(--danger)">自動排除「區段」</span>)：`);
+        let val = await customPrompt(`批次修改 ${colName}`, `請輸入${colName}數值<br>(註：<span style="color:var(--danger)">自動排除「區段」的旅客</span>)：`);
         if (val === null || val === '') return;
         let numVal = pNum(val);
         document.querySelectorAll('#list-body tr[id^="row-"]').forEach(tr => {
@@ -1361,7 +1361,7 @@
                 }
             }
         });
-        customAlert(`已套用「${colName}」新數值至區段為全程或未填寫的旅客！\n請確認無誤後，務必點擊右上角【修改儲存更新】以寫入資料庫。`, 'success');
+        customAlert(`已套用「${colName}」！\n需點擊右上角【修改儲存】更新。`, 'success');
     }
 
     function renderList() {
