@@ -318,8 +318,8 @@
         <div id="modal-title" class="modal-title">TITLE</div>
         <div id="modal-msg" class="modal-msg">CONTENT</div>
         <div class="modal-actions">
-            <button id="modal-btn-cancel" class="modal-btn modal-btn-cancel" onclick="closeModal(false)" style="display:none;">CANCEL</button>
-            <button id="modal-btn-confirm" class="modal-btn modal-btn-confirm" onclick="closeModal(true)">確定</button>
+            <button id="modal-btn-cancel" class="modal-btn modal-btn-cancel" style="display:none;">CANCEL</button>
+            <button id="modal-btn-confirm" class="modal-btn modal-btn-confirm">確定</button>
         </div>
     </div>
 </div>
@@ -672,18 +672,29 @@
     }
 
     let modalCallback = null;
+    
+    // 👑 修復點 2: 完善事件綁定的初始化與解綁邏輯，避免事件被污染
     function showCustomModal(options) {
         document.getElementById('modal-title').innerText = options.title || 'INFORMATION';
         document.getElementById('modal-msg').innerHTML = options.msg.replace(/\n/g, '<br>');
-        const btnCancel = document.getElementById('modal-btn-cancel'); const btnConfirm = document.getElementById('modal-btn-confirm');
+        const btnCancel = document.getElementById('modal-btn-cancel'); 
+        const btnConfirm = document.getElementById('modal-btn-confirm');
+        
+        // 確保在顯示之前，清除被其他特殊功能 (例如 runValidation) 所強加的事件
+        btnCancel.onclick = function() { closeModal(false); };
+        btnConfirm.onclick = function() { closeModal(true); };
+
         if (options.type === 'confirm') { 
             btnCancel.style.display = 'block'; 
             btnCancel.innerText = '取消'; 
             btnConfirm.innerText = 'CONFIRM'; 
         } 
         else { btnCancel.style.display = 'none'; btnConfirm.innerText = '確定'; }
-        modalCallback = options.callback || null; document.getElementById('custom-modal').classList.add('show');
+        
+        modalCallback = options.callback || null; 
+        document.getElementById('custom-modal').classList.add('show');
     }
+    
     function closeModal(isConfirm) { 
         document.getElementById('custom-modal').classList.remove('show'); 
         // 恢復可能的寬度變更 (檢核表單專用)
@@ -693,6 +704,7 @@
         if (modalCallback && isConfirm) setTimeout(modalCallback, 200); 
         modalCallback = null; 
     }
+    
     function customAlert(msg, type = 'info') { let title = 'INFORMATION';
         if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR';
         if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg });
@@ -1310,15 +1322,17 @@
         let firstTag = String(groupStr).split(',')[0].trim();
         return firstTag.replace(/\(L\)$/, '');
     }
-
+    
+    // 👑 修復點 1: 確保空白與全程都會被計算，只排除「區段」
     async function promptBatchUpdate(colName) {
         if (colName !== '港務費' && colName !== '小費') return;
-        let val = await customPrompt(`批次修改 ${colName}`, `請輸入新的${colName}數值 (註：僅會套用至「區段」設定為「全程」的旅客)：`);
+        let val = await customPrompt(`批次修改 ${colName}`, `請輸入新的${colName}數值<br>(註：將套用至區段為「全程」或「未填寫」的旅客，<span style="color:var(--danger)">自動排除「區段」</span>)：`);
         if (val === null || val === '') return;
         let numVal = pNum(val);
         document.querySelectorAll('#list-body tr[id^="row-"]').forEach(tr => {
             let seg = tr.querySelector('.edit-segment')?.value;
-            if (seg === '全程') {
+            // 只要不是「區段」都會被套用 (亦即套用給「全程」和「空白」)
+            if (seg !== '區段') {
                 let input = tr.querySelector(`.adv-input[data-col="${colName}"]`);
                 if (input) {
                     input.value = fmtNum(numVal);
@@ -1326,7 +1340,7 @@
                 }
             }
         });
-        customAlert(`已套用「${colName}」新數值至區段為全程的旅客！\n請確認無誤後，務必點擊右上角【修改儲存更新】以寫入資料庫。`, 'success');
+        customAlert(`已套用「${colName}」新數值至區段為全程或未填寫的旅客！\n請確認無誤後，務必點擊右上角【修改儲存更新】以寫入資料庫。`, 'success');
     }
 
     function renderList() {
@@ -1335,12 +1349,10 @@
         const currentGroupCode = document.getElementById('search-groupCode').value || "未知";
         let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金"];
         
-        // 移除了 "取消理由" 和 "取消結果"
         let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","區段","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務", "區段"];
         
-        // 設定哪些 targetCols 需要靠右對齊 (金額類)
         let monetaryTargetCols = ["Coupon船內預存金", "Coupon船內優惠券", "基本旅費總價", "佣金", "名義變更金額", "SET應付"];
 
         let activeClsNo = activeColFilters['NO'] ? 'active' : '';
@@ -1377,7 +1389,6 @@
             headHtml += `<th class="adv-col" style="width:${advWidth}; color:#EAD6A3; font-weight:500; letter-spacing:0.05em; border-bottom: 2px solid #C4A767; ${clickAttr}" ${clickFunc}>${c} ${(c === '港務費' || c === '小費') ? '✎' : ''}</th>`;
         });
 
-        // 插入被移動的取消理由與取消結果
         headHtml += `<th style="width:200px;">取消理由</th>`;
         headHtml += `<th style="width:95px;">取消結果</th>`;
 
@@ -1609,7 +1620,6 @@
                 html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${fmtNum(getVal(item, c))}" ${extraAttr}></td>`;
             });
 
-            // 附加 取消理由 與 取消結果 的欄位
             html += `<td><input type="text" class="td-input edit-cancelReason" value="${getVal(item, "取消理由")}" ${lockAttr}></td>`;
             html += `<td><select class="td-input edit-cancelResult"><option value="" ${!cancelResVal?'selected':''}></option><option value="不移行" ${cancelResVal==='不移行'?'selected':''}>不移行</option><option value="往後移團" ${cancelResVal==='往後移團'?'selected':''}>往後移團</option><option value="往前移團" ${cancelResVal==='往前移團'?'selected':''}>往前移團</option><option value="名義變更" ${cancelResVal==='名義變更'?'selected':''}>名義變更</option></select></td>`;
 
@@ -1799,7 +1809,6 @@
         if (errors.length === 0) {
             customAlert("檢核完成，目前名單無任何異常項目！", "success");
         } else {
-            // 建構大表寬度的表格UI
             let html = `<div style="max-height:500px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--border); border-radius:8px;">
                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
                     <thead style="position:sticky; top:0; background:var(--primary-light); color:var(--white); z-index:10;">
@@ -1841,7 +1850,6 @@
             document.getElementById('modal-title').innerText = '檢核結果：發現異常問題件';
             document.getElementById('modal-msg').innerHTML = html;
             
-            // 將 Modal 強制放寬對齊清單
             document.querySelector('#custom-modal .modal-box').style.width = '90vw';
             document.querySelector('#custom-modal .modal-box').style.maxWidth = '1400px';
 
@@ -1856,7 +1864,6 @@
         }
     }
 
-    // 更新各單筆檢核狀態並寫入Logs
     window.markIssueStatus = function(issueId, status, no, name, col) {
         let tr = document.getElementById(issueId);
         let noteTd = document.getElementById(`note-${issueId}`);
@@ -1866,20 +1873,18 @@
         let note = "";
         let actionType = "";
         if(status === 'pass') {
-            tr.style.backgroundColor = '#ECFDF5'; // 淡綠底色
+            tr.style.backgroundColor = '#ECFDF5'; 
             note = `${operator}排除異常 ${dateStr}`;
             actionType = '排除異常';
         } else {
-            tr.style.backgroundColor = '#FEF2F2'; // 淡紅底色
+            tr.style.backgroundColor = '#FEF2F2'; 
             note = `${operator}列為問題 ${dateStr}`;
             actionType = '列為問題';
         }
         
         noteTd.innerText = note;
         
-        // 更新暫存資料結構以供匯出
         let parts = issueId.split('-');
-        // 處理可能有 dash 的 no 例如 GRP-1
         let trNo = parts.slice(1, parts.length-1).join('-'); 
         let j = parseInt(parts[parts.length-1]);
         let errObj = window._currentValidationErrors.find(e => e.no === trNo);
@@ -1888,7 +1893,6 @@
             errObj.issues[j].note = note;
         }
 
-        // 呼叫新 API，背景直接寫入 System Logs
         let targetStr = `NO.${no} ${name} [${col}]`;
         fetch(gasURL, {
             method: 'POST',
@@ -1900,7 +1904,6 @@
         let errors = window._currentValidationErrors;
         if(!errors || errors.length === 0) return;
         
-        // 匯出直觀的檢核大表，而非原始資料
         let exportData = [["NO", "姓名", "ID", "錯誤數值", "正常數值", "處理狀態", "說明"]];
         
         errors.forEach(e => {
