@@ -173,7 +173,6 @@
         .adv-input { color: #8A6427 !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif; background-color: #FCFAF5 !important;}
         .adv-input:focus { background-color: #FFFFFF !important; box-shadow: 0 0 0 2px rgba(138, 100, 39, 0.1) !important; border-color: #C5A880 !important;}
 
-        /* 新增：金額靠右對齊的輔助 Class */
         .text-right { text-align: right !important; }
 
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.2);}
@@ -503,7 +502,7 @@
                         <option value="群組">群組</option>
                         <option value="同房">同房</option>
                         <option value="孩童">孩童</option>
-                        <option value="特殊需求">特殊需求</option>
+                        <option value="備註或需求">備註或需求</option>
                         <option value="無ID">無ID</option>
                         <option value="已取消">已取消訂單</option>
                     </select>
@@ -1015,7 +1014,7 @@
             <div class="toggle-btn" onclick="toggleAdvanced(${num})">[+] 展開/隱藏 其他區段與特殊需求</div>
             <div class="advanced-fields" id="advanced-${num}">
                 <div class="grid-4">
-                    <div class="input-group"><label>特殊需求</label><input type="text" class="p-special-req"></div>
+                    <div class="input-group"><label>備註或需求</label><input type="text" class="p-special-req"></div>
                     <div class="input-group"><label>預購 (5萬)</label><input type="text" class="p-deposit" value="0" onfocus="unformatNum(this)" onblur="formatNumInput(this)"></div>
                     <div class="input-group"><label>孩童備註</label><select class="p-child-remark" onchange="document.getElementById('p-block-${num}').setAttribute('data-last-lookup', ''); autoCalcPrice(${num})">
                         <option value="">無</option><option value="2-6歲">2-6歲</option><option value="7-12歲">7-12歲</option>
@@ -1255,6 +1254,23 @@
         renderList(); 
     }
 
+    function getVal(item, colName) { 
+        let idx = window.currentGroupHeaders.indexOf(colName);
+        if (idx === -1 && colName === "備註或需求") idx = window.currentGroupHeaders.indexOf("特殊需求");
+        if (idx === -1 && colName === "特殊需求") idx = window.currentGroupHeaders.indexOf("備註或需求");
+        return idx > -1 ? (item.raw[idx] !== undefined ? item.raw[idx] : "") : ""; 
+    }
+
+    function getFilterVal(item, col) {
+        if(col === "NO") return String(item.no || "");
+        if(col === "旅客姓名") return item.name || "";
+        if(col === "NAME") return item.ename || "";
+        if(col === "ID") return item.id || "";
+        if(col === "房型") return item.roomType || "";
+        if(col === "備註或需求" || col === "特殊需求") return getVal(item, "備註或需求") || "";
+        return getVal(item, col);
+    }
+
     function calcGridRow(no) {
         let tr = document.getElementById('row-' + no);
         if(!tr) return;
@@ -1326,18 +1342,6 @@
         calcGridRow(no);
     }
 
-    function getVal(item, colName) { const idx = window.currentGroupHeaders.indexOf(colName); return idx > -1 ? (item.raw[idx] !== undefined ? item.raw[idx] : "") : ""; }
-
-    function getFilterVal(item, col) {
-        if(col === "NO") return String(item.no || "");
-        if(col === "旅客姓名") return item.name || "";
-        if(col === "NAME") return item.ename || "";
-        if(col === "ID") return item.id || "";
-        if(col === "房型") return item.roomType || "";
-        if(col === "特殊需求") return getVal(item, "特殊需求") || "";
-        return getVal(item, col);
-    }
-
     function getCleanGroup(groupStr) {
         if (!groupStr) return "";
         let firstTag = String(groupStr).split(',')[0].trim();
@@ -1368,20 +1372,20 @@
         const currentGroupCode = document.getElementById('search-groupCode').value || "未知";
         let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金"];
         
-        let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","區段","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
+        let targetCols = ["NO","備註或需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","區段","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
-        let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務", "區段"];
+        let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "備註或需求", "房型", "業務", "區段"];
         
         let monetaryTargetCols = ["Coupon船內預存金", "Coupon船內優惠券", "基本旅費總價", "佣金", "名義變更金額", "SET應付"];
 
         let activeClsNo = activeColFilters['NO'] ? 'active' : '';
         let headHtml = `<tr>
             <th class="sticky-1" style="z-index: 40;">NO. <span class="filter-icon ${activeClsNo}" onclick="openColumnFilter(event, 'NO')">▼</span></th>
-            <th style="width:240px;">特殊需求 <span class="filter-icon" onclick="openColumnFilter(event, '特殊需求')">▼</span></th>
+            <th style="width:240px;">備註或需求 <span class="filter-icon" onclick="openColumnFilter(event, '備註或需求')">▼</span></th>
             <th class="sticky-2">旅客姓名 <span class="filter-icon" onclick="openColumnFilter(event, '旅客姓名')">▼</span></th>
             <th class="sticky-3">NAME <span class="filter-icon" onclick="openColumnFilter(event, 'NAME')">▼</span></th>`;
         targetCols.forEach(c => { 
-            if(!["NO","特殊需求","旅客姓名","NAME","Status"].includes(c)) {
+            if(!["NO","備註或需求","旅客姓名","NAME","Status"].includes(c)) {
                 let w = "75px";
                 if(c === "房型") w = "220px";
                 if(c === "登船港" || c === "離船港" || c === "ID" || c === "訂編" || c === "業務") w = "105px";
@@ -1449,8 +1453,8 @@
                 if (!childVal || childVal === "無" || childVal.trim() === "") return false;
             }
             
-            if (filterStatus === "特殊需求") {
-                let specReq = getVal(item, "特殊需求");
+            if (filterStatus === "備註或需求") {
+                let specReq = getVal(item, "備註或需求");
                 if (!specReq || String(specReq).trim() === "") return false;
             }
             
@@ -1494,7 +1498,7 @@
 
             let gA = getCleanGroup(a.groupNote); let gB = getCleanGroup(b.groupNote);
             let rA = String(a.roomGroup || '').trim(); let rB = String(b.roomGroup || '').trim();
-            let sA = String(getVal(a, '特殊需求') || '').trim(); let sB = String(getVal(b, '特殊需求') || '').trim();
+            let sA = String(getVal(a, '備註或需求') || '').trim(); let sB = String(getVal(b, '備註或需求') || '').trim();
             let hasGrpA = gA !== ''; let hasGrpB = gB !== '';
             let hasRoomA = (rA !== '' && roomCounts[rA] > 1); let hasRoomB = (rB !== '' && roomCounts[rB] > 1);
             let hasSpecA = sA !== ''; let hasSpecB = sB !== '';
@@ -1585,10 +1589,10 @@
             if (isRoom) { let membersStr = `【同房代號: ${item.roomGroup}】<br>室友清單：<br>` + roomMap[item.roomGroup].map(m => `🛌 ${m.name} (ID: ${m.id||'--'})`).join('<br>');
             tagHTML += `<span class="tag tag-room" onmouseenter="showTagTooltip(event, '${membersStr}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">房</span>`; }
 
-            let specialReq = getVal(item, '特殊需求'); let specialReqHtml = '';
+            let specialReq = getVal(item, '備註或需求'); let specialReqHtml = '';
             if (specialReq.trim() !== '') {
                 let escapedReq = specialReq.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '<br>');
-                specialReqHtml = `<span class="tag tag-special" style="margin-right:5px; flex:none; padding:2px 5px;" onmouseenter="showTagTooltip(event, '【特殊需求】<br>${escapedReq}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">特</span>`;
+                specialReqHtml = `<span class="tag tag-special" style="margin-right:5px; flex:none; padding:2px 5px;" onmouseenter="showTagTooltip(event, '【備註或需求】<br>${escapedReq}')" onmousemove="moveTagTooltip(event)" onmouseleave="hideTagTooltip()">備</span>`;
             }
             let childVal = getVal(item, "孩童備註");
             if (childVal && (childVal.includes("2-6歲") || childVal.includes("7-12歲"))) {
@@ -1724,7 +1728,8 @@
             const checkStr = (origVal, newVal, label, fieldKey) => { if (String(origVal).trim() !== String(newVal).trim()) { fields[fieldKey] = newVal; rowChanges.push(`${label} ➔ [${newVal}]`); } };
             const checkNum = (origVal, newVal, label, fieldKey) => { let o = pNum(origVal); let n = pNum(newVal); if (o !== n) { fields[fieldKey] = n; rowChanges.push(`${label} ➔ [${n}]`); } };
             
-            checkStr(getVal(orig, "特殊需求"), tr.querySelector('.req-val').value, '特殊需求', '特殊需求');
+            let reqColKey = window.currentGroupHeaders.includes("備註或需求") ? "備註或需求" : "特殊需求";
+            checkStr(getVal(orig, reqColKey), tr.querySelector('.req-val').value, '備註或需求', reqColKey);
             checkStr(getVal(orig, "旅客姓名"), tr.querySelector('.edit-name').value, '旅客姓名', '旅客姓名');
             checkStr(getVal(orig, "NAME"), tr.querySelector('.edit-ename').value.toUpperCase(), 'NAME', 'NAME');
             checkStr(orig.id || '', tr.querySelector('.edit-id').value, 'ID', 'ID');
@@ -1766,8 +1771,10 @@
         .catch(err => { hideLoading(); customAlert("網路錯誤，請稍後再試。", "error"); });
     }
 
-    function runValidation() {
+    async function runValidation() {
         if(!window.currentGroupData || window.currentGroupData.length === 0) return customAlert("請先搜尋航程名單！", "warning");
+        
+        showLoading("檢核中，同步歷史排除紀錄...");
         
         let groupCode = document.getElementById('search-groupCode').value;
         let defs = window.voyageDefaults[groupCode] || {};
@@ -1831,8 +1838,33 @@
         });
         
         if (errors.length === 0) {
+            hideLoading();
             customAlert("檢核完成，目前名單無任何異常項目！", "success");
         } else {
+            try {
+                let logRes = await fetch(gasURL + "?action=getLogs&t=" + new Date().getTime());
+                let logData = await logRes.json();
+                let logs = logData.data || [];
+                
+                errors.forEach(e => {
+                    e.issues.forEach(issue => {
+                        let targetStr = `NO.${e.no} ${e.name} [${issue.col}]`;
+                        let matchLogs = logs.filter(l => l.target === targetStr && (l.action === '排除異常' || l.action === '列為問題'));
+                        if (matchLogs.length > 0) {
+                            matchLogs.sort((a,b) => new Date(b.time.replace(/-/g, '/')).getTime() - new Date(a.time.replace(/-/g, '/')).getTime());
+                            let latest = matchLogs[0];
+                            if (latest.action === '排除異常') issue.status = 'pass';
+                            else if (latest.action === '列為問題') issue.status = 'issue';
+                            issue.note = latest.details;
+                        }
+                    });
+                });
+            } catch(err) {
+                console.error("同步歷史排除紀錄失敗", err);
+            }
+
+            hideLoading();
+
             let html = `<div style="max-height:500px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--border); border-radius:8px;">
                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
                     <thead style="position:sticky; top:0; background:var(--primary-light); color:var(--white); z-index:10;">
@@ -1851,19 +1883,23 @@
             errors.forEach(e => { 
                 e.issues.forEach((issue, j) => {
                     let issueId = `issue-${e.no}-${j}`;
-                    html += `<tr id="${issueId}" style="border-bottom:1px solid var(--border); transition:background-color 0.3s; background:var(--white);">
+                    let bg = 'var(--white)';
+                    if (issue.status === 'pass') bg = '#ECFDF5';
+                    else if (issue.status === 'issue') bg = '#FEF2F2';
+
+                    html += `<tr id="${issueId}" style="border-bottom:1px solid var(--border); transition:background-color 0.3s; background:${bg};">
                         <td style="padding:8px 10px; font-weight:600; color:var(--primary);">${e.no}</td>
                         <td style="padding:8px 10px;">${e.name}</td>
                         <td style="padding:8px 10px; color:var(--text-light);">${e.id||'--'}</td>
                         <td style="padding:8px 10px; color:var(--danger); font-weight:600;">${issue.actual}</td>
                         <td style="padding:8px 10px; color:var(--success); font-weight:600;">${issue.expected}</td>
                         <td style="padding:8px 10px; text-align:center;">
-                            <button onclick="markIssueStatus('${issueId}', 'pass', '${e.no}', '${e.name}', '${issue.col}')" style="background:#065F46; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">✔️ 排除異常</button>
+                            <button onclick="markIssueStatus('${issueId}', 'pass', '${e.no}', '${e.name}', '${issue.col}')" style="background:#065F46; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">✅ 排除異常</button>
                         </td>
                         <td style="padding:8px 10px; text-align:center;">
                             <button onclick="markIssueStatus('${issueId}', 'issue', '${e.no}', '${e.name}', '${issue.col}')" style="background:#9F1239; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">❌ 列為問題</button>
                         </td>
-                        <td id="note-${issueId}" style="padding:8px 10px; color:var(--text-light); font-size:11px;"></td>
+                        <td id="note-${issueId}" style="padding:8px 10px; color:var(--text-light); font-size:11px;">${issue.note || ''}</td>
                     </tr>`;
                 });
             });
