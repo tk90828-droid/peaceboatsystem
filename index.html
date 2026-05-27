@@ -4,18 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1440, user-scalable=yes">
     <title>和平船大表系統 - Premium Edition</title>
-
     <meta name="description" content="和平船大表系統">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tk90828-droid.github.io/peaceboatsystem/">
-    <meta property="og:title" content="和平船大表系統 - Premium Edition">
-    <meta property="og:description" content="和平船航程與旅客名單管理系統 (內部系統)">
-
-
-
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -201,6 +191,15 @@
         .room-bg-2 { background-color: #F6F1EA !important; } 
         .normal-bg { background-color: var(--white) !important; }
         
+        /* 系統歷史紀錄 Timeline 特效 UI */
+        .timeline-wrapper { padding: 30px; max-width: 900px; margin: 0 auto; }
+        .timeline-item { display: flex; margin-bottom: 30px; gap: 20px; align-items: stretch; position: relative; }
+        .timeline-time { width: 100px; flex: none; text-align: right; font-size: 12px; color: var(--text-light); font-family: monospace; padding-top: 2px; line-height: 1.4; }
+        .timeline-node { position: relative; width: 2px; background: var(--border); display: flex; flex-direction: column; align-items: center; }
+        .timeline-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); position: absolute; top: 4px; border: 3px solid var(--sys-bg); box-shadow: 0 0 0 2px rgba(13,148,136,0.3); }
+        .timeline-content { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: transform 0.2s; }
+        .timeline-content:hover { transform: translateX(3px); box-shadow: 0 6px 25px rgba(0,0,0,0.06); border-color: var(--accent); }
+
         #page-logs table { table-layout: fixed; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);}
         #page-logs table th { background: var(--sys-bg); color: var(--primary); font-weight: 600; border-bottom: 1px solid var(--border);}
         #page-logs table td { padding: 15px; border-right: none; border-bottom: 1px solid var(--sys-bg);}
@@ -366,8 +365,8 @@
             <input type="text" id="cancel-amount" placeholder="請輸入變更金額" onfocus="unformatNum(this)" onblur="formatNumInput(this)">
         </div>
         <div class="input-group" style="text-align:left; margin-top: 15px;">
-            <label>備註</label>
-            <input type="text" id="cancel-remark" placeholder="">
+            <label>取消備註</label>
+            <input type="text" id="cancel-remark" placeholder="輸入取消詳細備註...">
         </div>
         <div class="modal-actions" style="margin-top:30px;">
             <button class="modal-btn modal-btn-cancel" style="display:block;" onclick="closeCancelModal()">返回</button>
@@ -553,30 +552,22 @@
         </div>
         
         <div id="page-logs" class="page-section">
-            <div class="section-title">System Logs 系統操作紀錄</div>
+            <div class="section-title">System Logs 系統操作紀錄與個人歷程</div>
             <div class="search-bar" style="justify-content: space-between; align-items: center; padding: 20px 25px; flex-wrap: wrap; gap: 15px;">
-                <span style="font-size: 11px; color: var(--text-light); font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">顯示最新操作歷史，方便稽核追蹤。</span>
+                <div style="display:flex; gap:10px; flex:1; min-width:300px;">
+                    <input type="text" id="log-search-kw" placeholder="🔍 搜尋個人歷程 (請輸入 NO / ID / 姓名 / 代號)" style="width: 100%; max-width: 400px; padding: 0 15px; border: 1px solid var(--border); font-size: 13px; height: 38px; border-radius:6px; background:var(--sys-bg);" oninput="renderLogsUI(window.globalLogCache)">
+                </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="date" id="log-start-date" style="padding: 0 12px; border: 1px solid var(--border); font-size: 12px; height: 36px; background: var(--white); color: var(--text-main); border-radius:6px;">
+                    <input type="date" id="log-start-date" style="padding: 0 12px; border: 1px solid var(--border); font-size: 12px; height: 36px; background: var(--white); color: var(--text-main); border-radius:6px;" onchange="renderLogsUI(window.globalLogCache)">
                     <span style="font-size: 12px; color: var(--text-light); font-weight: 500;">至</span>
-                    <input type="date" id="log-end-date" style="padding: 0 12px; border: 1px solid var(--border); font-size: 12px; height: 36px; background: var(--white); color: var(--text-main); border-radius:6px;">
+                    <input type="date" id="log-end-date" style="padding: 0 12px; border: 1px solid var(--border); font-size: 12px; height: 36px; background: var(--white); color: var(--text-main); border-radius:6px;" onchange="renderLogsUI(window.globalLogCache)">
                     <button type="button" class="btn-login" style="background:var(--success); height: 36px; padding: 0 20px; border: none; font-size: 11px;" onclick="exportLogs()">匯出紀錄</button>
                     <button type="button" class="btn-login" style="width: 100px; height: 36px; background:var(--white); color:var(--primary); border:1px solid var(--primary);" onclick="loadLogs(true)">↻ 更新</button>
                 </div>
             </div>
-            <div class="table-wrapper" style="box-shadow:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="log-time">時間</th>
-                            <th class="log-op">操作人</th>
-                            <th class="log-target">影響對象 (NO/ID/代號)</th>
-                            <th class="log-action">動作類型</th>
-                            <th>詳細內容</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logs-body"><tr><td colspan="5" style="text-align:center; color:var(--text-light); padding: 80px;">紀錄載入中...</td></tr></tbody>
-                </table>
+            
+            <div id="logs-view-container">
+                <div style="text-align:center; color:var(--text-light); padding: 80px;">紀錄載入中...</div>
             </div>
         </div>
         
@@ -665,6 +656,34 @@
         return true;
     }
 
+    // 完整的房型規範(前端嚴格綁定標籤)
+    const roomOptionsHTML = `
+        <option value="">-- 請選擇房型 --</option>
+        <option value="Pair Owner's Suite-A1-(雙人)主人套房">Pair Owner's Suite-A1-(雙人)主人套房</option>
+        <option value="Pair Penthouse Suite-A2-(雙人)閣樓套房">Pair Penthouse Suite-A2-(雙人)閣樓套房</option>
+        <option value="Pair Premium Suite-A3-(雙人)尊爵套房">Pair Premium Suite-A3-(雙人)尊爵套房</option>
+        <option value="Pair Suite-A4-(雙人)豪華套房">Pair Suite-A4-(雙人)豪華套房</option>
+        <option value="Pair Junior Suite-B-(雙人)迷你套房">Pair Junior Suite-B-(雙人)迷你套房</option>
+        <option value="Pair Balcony Ⅰ-C1-(雙人)陽台房I">Pair Balcony Ⅰ-C1-(雙人)陽台房I</option>
+        <option value="Pair Balcony Ⅱ-C2-(雙人)陽台房II">Pair Balcony Ⅱ-C2-(雙人)陽台房II</option>
+        <option value="Pair Outside wide-D1-(雙人)海景寬敞房">Pair Outside wide-D1-(雙人)海景寬敞房</option>
+        <option value="Pair Outside view-D2-(雙人)海景景緻房">Pair Outside view-D2-(雙人)海景景緻房</option>
+        <option value="Pair OutsideⅠ-E-(雙人)海景房I">Pair OutsideⅠ-E-(雙人)海景房I</option>
+        <option value="Pair OutsideⅡ-F-(雙人)海景房II">Pair OutsideⅡ-F-(雙人)海景房II</option>
+        <option value="Pair Inside-G-(雙人)內艙房">Pair Inside-G-(雙人)內艙房</option>
+        <option value="Single Balcony Ⅰ-I-(單人)陽台房I">Single Balcony Ⅰ-I-(單人)陽台房I</option>
+        <option value="Single Balcony Ⅱ-J-(單人)陽台房II">Single Balcony Ⅱ-J-(單人)陽台房II</option>
+        <option value="Single Outside Ⅰ-K-(單人)海景房I">Single Outside Ⅰ-K-(單人)海景房I</option>
+        <option value="Single Outside Ⅱ-L-(單人)海景房II">Single Outside Ⅱ-L-(單人)海景房II</option>
+        <option value="Single Inside-M-(單人)內艙房">Single Inside-M-(單人)內艙房</option>
+        <option value="Semi Single Outside Ⅰ-E2-(半單)海景房I">Semi Single Outside Ⅰ-E2-(半單)海景房I</option>
+        <option value="Semi Single Outside Ⅱ-F2-(半單)海景房II">Semi Single Outside Ⅱ-F2-(半單)海景房II</option>
+        <option value="Semi Single Inside-G2-(半單)內艙房">Semi Single Inside-G2-(半單)內艙房</option>
+        <option value="Friendly Outside Ⅱ-F4-(友好)海景房II">Friendly Outside Ⅱ-F4-(友好)海景房II</option>
+        <option value="Friendly Inside-G3-(友好)內艙房">Friendly Inside-G3-(友好)內艙房</option>
+        <option value="Friendly inside young-Y-(友好)內艙房">Friendly inside young-Y-(友好)內艙房</option>
+    `;
+
     const gasURL = "https://script.google.com/macros/s/AKfycbwXVsk6P7i3KcYsgXNtJ-e8EHb546aprMrLeWtm2gvr0ew0vZUvtTtUB38RXeMmIZPYpw/exec";
     let passengerCount = 0; let blockCounter = 0;
     let priceDict = {}; let existingPassengers = []; 
@@ -682,6 +701,7 @@
         const el = document.getElementById(id);
         el.value = ''; el.focus();
         if(id === 'global-groupCode') { document.getElementById('step-2-container').style.opacity = '0'; setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); handleGroupInput(); }
+        if(id === 'log-search-kw') { renderLogsUI(window.globalLogCache); }
     }
 
     let modalCallback = null;
@@ -757,32 +777,6 @@
     function showLogDetails(content) { document.getElementById('log-detail-content').innerText = content; document.getElementById('log-detail-modal').classList.add('show'); }
     function copyLogDetails() { navigator.clipboard.writeText(document.getElementById('log-detail-content').innerText).then(() => customAlert('已複製明細到剪貼簿！', 'success')); }
 
-    const roomOptionsHTML = `
-        <option value="">-- 請選擇房型 --</option>
-        <option value="Pair Owner's Suite-A1-(雙人)主人套房">Pair Owner's Suite-A1-(雙人)主人套房</option>
-        <option value="Pair Penthouse Suite-A2-(雙人)閣樓套房">Pair Penthouse Suite-A2-(雙人)閣樓套房</option>
-        <option value="Pair Premium Suite-A3-(雙人)尊爵套房">Pair Premium Suite-A3-(雙人)尊爵套房</option>
-        <option value="Pair Suite-A4-(雙人)豪華套房">Pair Suite-A4-(雙人)豪華套房</option>
-        <option value="Pair Junior Suite-B-(雙人)迷你套房">Pair Junior Suite-B-(雙人)迷你套房</option>
-        <option value="Pair Balcony Ⅰ-C1-(雙人)陽台房I">Pair Balcony Ⅰ-C1-(雙人)陽台房I</option>
-        <option value="Pair Balcony Ⅱ-C2-(雙人)陽台房II">Pair Balcony Ⅱ-C2-(雙人)陽台房II</option>
-        <option value="Pair Outside wide-D1-(雙人)海景寬敞房">Pair Outside wide-D1-(雙人)海景寬敞房</option>
-        <option value="Pair Outside view-D2-(雙人)海景景緻房">Pair Outside view-D2-(雙人)海景景緻房</option>
-        <option value="Pair OutsideⅠ-E-(雙人)海景房I">Pair OutsideⅠ-E-(雙人)海景房I</option>
-        <option value="Pair OutsideⅡ-F-(雙人)海景房II">Pair OutsideⅡ-F-(雙人)海景房II</option>
-        <option value="Pair Inside-G-(雙人)內艙房">Pair Inside-G-(雙人)內艙房</option>
-        <option value="Single Balcony Ⅰ-I-(單人)陽台房I">Single Balcony Ⅰ-I-(單人)陽台房I</option>
-        <option value="Single Balcony Ⅱ-J-(單人)陽台房II">Single Balcony Ⅱ-J-(單人)陽台房II</option>
-        <option value="Single Outside Ⅰ-K-(單人)海景房I">Single Outside Ⅰ-K-(單人)海景房I</option>
-        <option value="Single Outside Ⅱ-L-(單人)海景房II">Single Outside Ⅱ-L-(單人)海景房II</option>
-        <option value="Single Inside-M-(單人)內艙房">Single Inside-M-(單人)內艙房</option>
-        <option value="Semi Single Outside Ⅰ-E2-(半單)海景房I">Semi Single Outside Ⅰ-E2-(半單)海景房I</option>
-        <option value="Semi Single Outside Ⅱ-F2-(半單)海景房II">Semi Single Outside Ⅱ-F2-(半單)海景房II</option>
-        <option value="Semi Single Inside-G2-(半單)內艙房">Semi Single Inside-G2-(半單)內艙房</option>
-        <option value="Friendly Outside Ⅱ-F4-(友好)海景房II">Friendly Outside Ⅱ-F4-(友好)海景房II</option>
-        <option value="Friendly Inside-G3-(友好)內艙房">Friendly Inside-G3-(友好)內艙房</option>
-        <option value="Friendly inside young-Y-(友好)內艙房">Friendly inside young-Y-(友好)內艙房</option>
-    `;
     window.onload = function() {
         const statusEl = document.getElementById('system-status');
         const t = new Date().getTime();
@@ -1388,8 +1382,6 @@
         
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "備註或需求", "房型", "業務", "區段"];
         
-        let monetaryTargetCols = ["Coupon船內預存金", "Coupon船內優惠券", "基本旅費總價", "佣金", "名義變更金額", "SET應付"];
-
         let activeClsNo = activeColFilters['NO'] ? 'active' : '';
         let headHtml = `<tr>
             <th class="sticky-1" style="z-index: 40;">NO. <span class="filter-icon ${activeClsNo}" onclick="openColumnFilter(event, 'NO')">▼</span></th>
@@ -1424,8 +1416,9 @@
             headHtml += `<th class="adv-col" style="width:${advWidth}; color:#EAD6A3; font-weight:500; letter-spacing:0.05em; border-bottom: 2px solid #C4A767; ${clickAttr}" ${clickFunc}>${c} ${(c === '港務費' || c === '小費') ? '✎' : ''}</th>`;
         });
 
-        headHtml += `<th style="width:200px;">取消理由</th>`;
+        headHtml += `<th style="width:160px;">取消理由</th>`;
         headHtml += `<th style="width:95px;">取消結果</th>`;
+        headHtml += `<th style="width:150px;">取消備註</th>`; // 插入取消備註欄位
 
         headHtml += '<th style="width:75px; border-left:1px solid rgba(255,255,255,0.1); text-align:center;">同房管理</th>';
         headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">修改儲存</button></th></tr>';
@@ -1647,7 +1640,7 @@
             `;
 
             advCols.forEach(c => { 
-                let extraAttr = ''; let extraClass = 'text-right'; // advCols 全為金額，設定靠右
+                let extraAttr = ''; let extraClass = 'text-right'; 
                 if (["港務費", "小費", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { 
                     extraAttr = `type="text" oninput="calcGridRow('${item.no}')" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"`; 
                 }
@@ -1657,6 +1650,7 @@
 
             html += `<td><input type="text" class="td-input edit-cancelReason" value="${getVal(item, "取消理由")}" ${lockAttr}></td>`;
             html += `<td><select class="td-input edit-cancelResult"><option value="" ${!cancelResVal?'selected':''}></option><option value="不移行" ${cancelResVal==='不移行'?'selected':''}>不移行</option><option value="往後移團" ${cancelResVal==='往後移團'?'selected':''}>往後移團</option><option value="往前移團" ${cancelResVal==='往前移團'?'selected':''}>往前移團</option><option value="名義變更" ${cancelResVal==='名義變更'?'selected':''}>名義變更</option></select></td>`;
+            html += `<td><input type="text" class="td-input edit-cancelRemark" value="${getVal(item, "取消備註")}" ${lockAttr}></td>`; // 新增欄位
 
             html += `
                 <td style="border-left: 1px solid var(--border); text-align: center; vertical-align: middle; padding: 0 8px;"><input type="hidden" class="edit-roomGroup" value="${item.roomGroup || ''}">${roomCancelBtn}</td>
@@ -1762,6 +1756,7 @@
             
             checkStr(getVal(orig, "取消理由"), tr.querySelector('.edit-cancelReason').value, '取消理由', '取消理由');
             checkStr(getVal(orig, "取消結果"), tr.querySelector('.edit-cancelResult').value, '取消結果', '取消結果');
+            checkStr(getVal(orig, "取消備註"), tr.querySelector('.edit-cancelRemark').value, '取消備註', '取消備註'); // 寫入批次更新邏輯
             
             checkNum(getVal(orig, "名義變更金額"), tr.querySelector('.edit-nameChange').value, '名義變更金', '名義變更金額');
             checkNum(getVal(orig, "SET應付"), tr.querySelector('.edit-set').value, 'SET應付', 'SET應付');
@@ -2200,25 +2195,103 @@
 
     function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'restoreOrder', no: no, operator: document.getElementById('current-username').innerText }) }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
 
+    // 全新升級 Timeline 與 Table 雙重呈現邏輯
     function renderLogsUI(data) {
-        const listBody = document.getElementById('logs-body'); listBody.innerHTML = "";
-        if(data.length === 0) { listBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:80px;">目前無任何操作紀錄</td></tr>'; return; }
-        window.globalLogCache = data;
-        data.forEach((log, index) => {
-            const row = document.createElement('tr'); 
-            let rawDetails = String(log.details || ""); let summary = rawDetails.replace(/\n/g, ' ');
-            let detailHTML = `<td class="log-detail"><div class="log-row-container"><div class="log-summary" title="${summary}">${summary}</div><div class="log-detail-link" onclick="showLogDetailsCache(${index})">[查看明細]</div></div></td>`;
-            row.innerHTML = `<td class="log-time">${log.time}</td><td class="log-op">${log.operator}</td><td class="log-target">${log.target || '-'}</td><td class="log-action">${log.action}</td>${detailHTML}`;
-            listBody.appendChild(row);
+        if (!data) data = window.globalLogCache || [];
+        window.globalLogCache = data; // 緩存
+        
+        let kw = document.getElementById('log-search-kw').value.trim().toLowerCase();
+        let startDateVal = document.getElementById('log-start-date').value;
+        let endDateVal = document.getElementById('log-end-date').value;
+        
+        let startTimestamp = startDateVal ? new Date(startDateVal.replace(/-/g, '/') + " 00:00:00").getTime() : 0;
+        let endTimestamp = endDateVal ? new Date(endDateVal.replace(/-/g, '/') + " 23:59:59").getTime() : Infinity;
+
+        let filteredData = data.filter(log => {
+            let logTimeStr = String(log.time); let logTimestamp = new Date(logTimeStr.replace(/-/g, '/')).getTime();
+            if (isNaN(logTimestamp)) { let m = logTimeStr.match(/(\d{4})[-/年](\d{1,2})[-/月](\d{1,2})/); if (m) logTimestamp = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])).getTime(); }
+            
+            let timeOk = (isNaN(logTimestamp) ? true : (logTimestamp >= startTimestamp && logTimestamp <= endTimestamp));
+            let kwOk = true;
+            if (kw) {
+                let target = String(log.target || "").toLowerCase();
+                let details = String(log.details || "").toLowerCase();
+                kwOk = target.includes(kw) || details.includes(kw);
+            }
+            return timeOk && kwOk;
         });
+
+        const container = document.getElementById('logs-view-container');
+        container.innerHTML = "";
+
+        if(filteredData.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:80px; color:var(--text-light); font-weight:500;">無符合的紀錄</div>';
+            return;
+        }
+
+        // 若使用者有進行個人歷程搜尋 (輸入關鍵字)，自動切換至高級時間軸模式
+        if (kw) {
+            let html = '<div class="timeline-wrapper">';
+            filteredData.forEach((log) => {
+                let dStr = log.time.split(' ')[0] || log.time;
+                let tStr = log.time.split(' ')[1] || '';
+                html += `
+                <div class="timeline-item">
+                    <div class="timeline-time">${dStr}<br><span style="font-weight:600; color:var(--primary); font-size:14px;">${tStr}</span></div>
+                    <div class="timeline-node"><div class="timeline-dot"></div></div>
+                    <div class="timeline-content">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span style="font-weight:700; color:var(--primary); font-size:14px; border-left:4px solid var(--gold); padding-left:8px;">${log.action}</span>
+                            <span style="font-size:11px; color:var(--text-light); background:var(--sys-bg); padding:4px 10px; border-radius:12px;">操作員: ${log.operator}</span>
+                        </div>
+                        <div style="font-size:13px; color:var(--accent); font-weight:600; margin-bottom:12px; display:inline-block; padding: 4px 8px; background: rgba(13, 148, 136, 0.05); border-radius: 4px;">影響對象：${log.target || '-'}</div>
+                        <pre style="margin:0; font-family:inherit; font-size:12px; color:var(--text-main); white-space:pre-wrap; line-height:1.6; background:#F8FAFC; padding:15px; border-radius:6px; border:1px solid #E2E8F0;">${log.details}</pre>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } 
+        // 無搜尋狀態下，顯示預設總覽列表
+        else {
+            let html = `<div class="table-wrapper" style="box-shadow:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="log-time">時間</th>
+                            <th class="log-op">操作人</th>
+                            <th class="log-target">影響對象 (NO/ID/代號)</th>
+                            <th class="log-action">動作類型</th>
+                            <th>詳細內容</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            filteredData.forEach((log) => {
+                let rawDetails = String(log.details || ""); let summary = rawDetails.replace(/\n/g, ' ');
+                // 為了避免 onclick 雙引號衝突，傳遞全域快取的 index
+                let idx = data.indexOf(log);
+                let detailHTML = `<td class="log-detail"><div class="log-row-container"><div class="log-summary" title="${summary.replace(/"/g, '&quot;')}">${summary}</div><div class="log-detail-link" onclick="showLogDetailsCache(${idx})">[查看明細]</div></div></td>`;
+                html += `<tr><td class="log-time">${log.time}</td><td class="log-op">${log.operator}</td><td class="log-target">${log.target || '-'}</td><td class="log-action">${log.action}</td>${detailHTML}</tr>`;
+            });
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
     }
 
-    function showLogDetailsCache(index) { showLogDetails(window.globalLogCache[index].details); }
+    function showLogDetailsCache(index) { 
+        if(window.globalLogCache[index]) showLogDetails(window.globalLogCache[index].details); 
+    }
 
     function loadLogs(forceRefresh = false) {
         if (!forceRefresh && !isLogsDirty && cachedLogs) { renderLogsUI(cachedLogs); return; }
-        document.getElementById('logs-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:80px; font-weight:600; letter-spacing:0.2em; color:var(--primary);">SYNCING...</td></tr>';
-        fetch(gasURL + "?action=getLogs&t=" + new Date().getTime()).then(res => res.json()).then(res => { if(res.status === 'success') { cachedLogs = res.data; isLogsDirty = false; renderLogsUI(cachedLogs); } });
+        document.getElementById('logs-view-container').innerHTML = '<div style="text-align:center; padding:80px; font-weight:600; letter-spacing:0.2em; color:var(--primary);">SYNCING...</div>';
+        fetch(gasURL + "?action=getLogs&t=" + new Date().getTime()).then(res => res.json()).then(res => { 
+            if(res.status === 'success') { 
+                cachedLogs = res.data; 
+                isLogsDirty = false; 
+                renderLogsUI(cachedLogs); 
+            } 
+        });
     }
 
     function exportLogs() {
