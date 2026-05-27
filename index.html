@@ -1133,9 +1133,7 @@
             let op = b.querySelector('.p-off-port').value.trim();
             let segInput = b.querySelector('.p-segment');
             
-            if (bp === defBoard && op === defOff) {
-                if(segInput.value === "") segInput.value = "全程";
-            } else {
+            if (bp !== defBoard || op !== defOff) {
                 hasPortMismatch = true;
                 if(segInput.value === "") needsSegmentPrompt = true;
             }
@@ -1919,6 +1917,7 @@
             btnCancel.innerText = '匯出異常清單 (EXCEL)';
             btnCancel.onclick = exportValidationErrors;
             btnConfirm.innerText = '關閉視窗';
+            btnConfirm.onclick = function() { closeModal(true); };
             
             document.getElementById('custom-modal').classList.add('show');
         }
