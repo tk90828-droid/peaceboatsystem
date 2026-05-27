@@ -173,6 +173,9 @@
         .adv-input { color: #8A6427 !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif; background-color: #FCFAF5 !important;}
         .adv-input:focus { background-color: #FFFFFF !important; box-shadow: 0 0 0 2px rgba(138, 100, 39, 0.1) !important; border-color: #C5A880 !important;}
 
+        /* 新增：金額靠右對齊的輔助 Class */
+        .text-right { text-align: right !important; }
+
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.2);}
         .dot-normal { background-color: var(--success); } .dot-cancel { background-color: var(--danger); } .dot-waitlist { background-color: var(--waitlist); }
         
@@ -520,7 +523,7 @@
                     請先搜尋航程以載入名單統計
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-update" style="border-color:var(--danger); color:var(--danger); height:32px; font-size:11px; font-weight: 700;" onclick="runValidation()">⚠ 檢核Check</button>
+                    <button type="button" class="btn-login" style="background:#0F766E; height:32px; font-size:11px;" onclick="runValidation()"> 🛡️ 檢核異常 </button>
                     <button class="btn-update" style="border-color:var(--primary); color:var(--primary); height:32px; font-size:11px; font-weight: 700;" onclick="sortByNoOnly()">↓ NO.排序</button>
                     <button class="btn-update" style="border-color:var(--text-light); color:var(--text-light); height:32px; font-size:11px;" onclick="resetTableFilters()">↻ 恢復預設排序</button>
                 </div>
@@ -675,13 +678,21 @@
         const btnCancel = document.getElementById('modal-btn-cancel'); const btnConfirm = document.getElementById('modal-btn-confirm');
         if (options.type === 'confirm') { 
             btnCancel.style.display = 'block'; 
-            btnCancel.innerText = '取消'; // Default cancel text
+            btnCancel.innerText = '取消'; 
             btnConfirm.innerText = 'CONFIRM'; 
         } 
         else { btnCancel.style.display = 'none'; btnConfirm.innerText = '確定'; }
         modalCallback = options.callback || null; document.getElementById('custom-modal').classList.add('show');
     }
-    function closeModal(isConfirm) { document.getElementById('custom-modal').classList.remove('show'); if (modalCallback && isConfirm) setTimeout(modalCallback, 200); modalCallback = null; }
+    function closeModal(isConfirm) { 
+        document.getElementById('custom-modal').classList.remove('show'); 
+        // 恢復可能的寬度變更 (檢核表單專用)
+        document.querySelector('#custom-modal .modal-box').style.width = '';
+        document.querySelector('#custom-modal .modal-box').style.maxWidth = '';
+
+        if (modalCallback && isConfirm) setTimeout(modalCallback, 200); 
+        modalCallback = null; 
+    }
     function customAlert(msg, type = 'info') { let title = 'INFORMATION';
         if (type === 'success') title = 'SUCCESS'; if (type === 'error') title = 'ERROR';
         if (type === 'warning') title = 'WARNING'; showCustomModal({ type: 'alert', title, msg });
@@ -870,7 +881,6 @@
             let pd = priceDict[lookupKey];
             if(pd) { 
                 let baseSf = pNum(pd.sfPrice);
-                // 處理孩童邏輯 (2-6歲免SF, 7-12歲單人10%或雙人20%)
                 if (childRemark === "2-6歲") {
                     baseSf = 0;
                 } else if (childRemark === "7-12歲") {
@@ -886,7 +896,6 @@
             } 
             block.setAttribute('data-last-lookup', lookupKey);
         } else {
-            // 如果只有改變孩童備註，也必須重新計算 (需從 priceDict 抓原始價格)
             let pd = priceDict[lookupKey];
             if (pd) {
                 let baseSf = pNum(pd.sfPrice);
@@ -914,7 +923,7 @@
         const isInside = fullRoomType.includes("內艙");
         const isSS = /SS/i.test(groupCode);
         let commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15);
-        if (childRemark === "2-6歲") commRate = 0; // 2-6歲 佣金為0
+        if (childRemark === "2-6歲") commRate = 0; 
 
         block.querySelector('.calc-comm-rate').value = (commRate * 100) + "%";
         
@@ -1250,7 +1259,7 @@
         let childRemark = origData ? getVal(origData, "孩童備註") : "";
 
         let commRate = isSS ? 0.15 : (isInside ? 0.18 : 0.15); 
-        if (childRemark === "2-6歲") commRate = 0; // 2-6歲佣金為0
+        if (childRemark === "2-6歲") commRate = 0; 
 
         tr.querySelector('.edit-crate').value = (commRate * 100) + "%";
         let baseTotal = sf - jgd - agtd + subA + subB + toilet + intlTax + visa + accRoom + upgRoom + portFee + tips + otherFee - posterDiscount;
@@ -1326,10 +1335,14 @@
         const currentGroupCode = document.getElementById('search-groupCode').value || "未知";
         let advCols = ["港務費", "小費", "SF船費", "JGD", "AGTD", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金"];
         
-        let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","區段","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","取消理由","取消結果","名義變更金額","SET應付","業務","訂編"];
+        // 移除了 "取消理由" 和 "取消結果"
+        let targetCols = ["NO","特殊需求","旅客姓名","NAME","Status","ID","生日","報名來源","老客","區段","當月優惠價","各種優惠價/船內特典","Coupon船內預存金","Coupon船內優惠券","房型","登船港","離船港","基本旅費總價","佣金%","佣金","名義變更金額","SET應付","業務","訂編"];
         
         let customFilterCols = ["當月優惠價", "各種優惠價/船內特典", "報名來源", "旅客姓名", "NAME", "ID", "特殊需求", "房型", "業務", "區段"];
         
+        // 設定哪些 targetCols 需要靠右對齊 (金額類)
+        let monetaryTargetCols = ["Coupon船內預存金", "Coupon船內優惠券", "基本旅費總價", "佣金", "名義變更金額", "SET應付"];
+
         let activeClsNo = activeColFilters['NO'] ? 'active' : '';
         let headHtml = `<tr>
             <th class="sticky-1" style="z-index: 40;">NO. <span class="filter-icon ${activeClsNo}" onclick="openColumnFilter(event, 'NO')">▼</span></th>
@@ -1343,8 +1356,8 @@
                 if(c === "登船港" || c === "離船港" || c === "ID" || c === "訂編" || c === "業務") w = "105px";
                 if(c === "生日") w = "110px"; 
                 if(c === "報名來源") w = "150px";
-                if(c === "各種優惠價/船內特典" || c === "取消理由") w = "200px";
-                if(c === "基本旅費總價" || c === "SET應付" || c === "名義變更金額" || c === "取消結果") w = "95px";
+                if(c === "各種優惠價/船內特典") w = "200px";
+                if(c === "基本旅費總價" || c === "SET應付" || c === "名義變更金額") w = "95px";
                 if(c === "佣金" || c === "區段") w = "80px";
                 
                 let displayC = c;
@@ -1363,6 +1376,11 @@
             let clickFunc = (c === '港務費' || c === '小費') ? `onclick="promptBatchUpdate('${c}')" title="點擊進行批次修改"` : '';
             headHtml += `<th class="adv-col" style="width:${advWidth}; color:#EAD6A3; font-weight:500; letter-spacing:0.05em; border-bottom: 2px solid #C4A767; ${clickAttr}" ${clickFunc}>${c} ${(c === '港務費' || c === '小費') ? '✎' : ''}</th>`;
         });
+
+        // 插入被移動的取消理由與取消結果
+        headHtml += `<th style="width:200px;">取消理由</th>`;
+        headHtml += `<th style="width:95px;">取消結果</th>`;
+
         headHtml += '<th style="width:75px; border-left:1px solid rgba(255,255,255,0.1); text-align:center;">同房管理</th>';
         headHtml += '<th style="width:105px; text-align:center;">操作 <button class="btn-batch" onclick="batchUpdateRows()" style="margin-top:4px;">修改儲存</button></th></tr>';
         document.getElementById('list-head').innerHTML = headHtml;
@@ -1567,32 +1585,33 @@
                 
                 <td><input type="text" class="td-input edit-promo" value="${getVal(item, "當月優惠價")}" onchange="fetchDictForGridRow('${item.no}')" ${lockAttr}></td>
                 <td><input type="text" class="td-input edit-promoExtras" value="${getVal(item, "各種優惠價/船內特典")}" ${lockAttr}></td>
-                <td><input type="text" class="td-input edit-couponDep" value="${getVal(item, "Coupon船內預存金")}" ${lockAttr}></td>
-                <td><input type="text" class="td-input edit-couponVou" value="${getVal(item, "Coupon船內優惠券")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-couponDep text-right" value="${getVal(item, "Coupon船內預存金")}" ${lockAttr}></td>
+                <td><input type="text" class="td-input edit-couponVou text-right" value="${getVal(item, "Coupon船內優惠券")}" ${lockAttr}></td>
                 <td><select class="td-input edit-room" onchange="fetchDictForGridRow('${item.no}')"><option value="${item.roomType}" selected>${item.roomType}</option>${roomOptionsHTML.replace(`<option value="">-- 請選擇房型 --</option>`, '')}</select></td>
                 <td><input type="text" class="td-input edit-bp" value="${getVal(item, "登船港")}" ${lockAttr}></td>
                 <td><input type="text" class="td-input edit-op" value="${getVal(item, "離船港")}" ${lockAttr}></td>
-                <td><input type="text" class="td-input td-readonly edit-tot" value="${fmtNum(getVal(item, "基本旅費總價"))}" readonly></td>
+                <td><input type="text" class="td-input td-readonly edit-tot text-right" value="${fmtNum(getVal(item, "基本旅費總價"))}" readonly></td>
                 <td><input type="text" class="td-input td-readonly edit-crate" value="${getVal(item, "佣金%")}" readonly style="color:var(--text-light); font-weight:normal;"></td>
-                <td><input type="text" class="td-input td-readonly edit-comm" value="${fmtNum(getVal(item, "佣金"))}" readonly style="color:var(--danger);"></td>
+                <td><input type="text" class="td-input td-readonly edit-comm text-right" value="${fmtNum(getVal(item, "佣金"))}" readonly style="color:var(--danger);"></td>
                 
-                <td><input type="text" class="td-input edit-cancelReason" value="${getVal(item, "取消理由")}" ${lockAttr}></td>
-                <td><select class="td-input edit-cancelResult"><option value="" ${!cancelResVal?'selected':''}></option><option value="不移行" ${cancelResVal==='不移行'?'selected':''}>不移行</option><option value="往後移團" ${cancelResVal==='往後移團'?'selected':''}>往後移團</option><option value="往前移團" ${cancelResVal==='往前移團'?'selected':''}>往前移團</option><option value="名義變更" ${cancelResVal==='名義變更'?'selected':''}>名義變更</option></select></td>
-                
-                <td><input type="text" class="td-input edit-nameChange" value="${fmtNum(getVal(item, "名義變更金額"))}" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"></td>
-                <td><input type="text" class="td-input td-readonly edit-set" value="${fmtNum(getVal(item, "SET應付"))}" readonly style="color:var(--accent);"></td>
+                <td><input type="text" class="td-input edit-nameChange text-right" value="${fmtNum(getVal(item, "名義變更金額"))}" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"></td>
+                <td><input type="text" class="td-input td-readonly edit-set text-right" value="${fmtNum(getVal(item, "SET應付"))}" readonly style="color:var(--accent);"></td>
                 <td><input type="text" class="td-input edit-operator" value="${getVal(item, "業務")}" ${lockAttr}></td>
                 <td><input type="text" class="td-input edit-orderId" value="${getVal(item, "訂編")}" ${lockAttr}></td>
             `;
 
             advCols.forEach(c => { 
-                let extraAttr = ''; let extraClass = '';
+                let extraAttr = ''; let extraClass = 'text-right'; // advCols 全為金額，設定靠右
                 if (["港務費", "小費", "下鋪指定A", "下鋪指定B", "免治馬桶", "國際旅客稅", "阿拉斯加稅", "無障礙房型", "房型升等", "其他追加費用", "海報志工優惠折扣金", "SF船費", "JGD", "AGTD"].includes(c)) { 
                     extraAttr = `type="text" oninput="calcGridRow('${item.no}')" onfocus="unformatNum(this)" onblur="this.setAttribute('readonly', true); formatNumInput(this); calcGridRow('${item.no}');" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" title="雙擊以編輯"`; 
                 }
                 else { extraAttr = `type="text" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);" title="雙擊以編輯"`; }
                 html += `<td class="adv-col"><input class="td-input adv-input ${extraClass}" data-col="${c}" value="${fmtNum(getVal(item, c))}" ${extraAttr}></td>`;
             });
+
+            // 附加 取消理由 與 取消結果 的欄位
+            html += `<td><input type="text" class="td-input edit-cancelReason" value="${getVal(item, "取消理由")}" ${lockAttr}></td>`;
+            html += `<td><select class="td-input edit-cancelResult"><option value="" ${!cancelResVal?'selected':''}></option><option value="不移行" ${cancelResVal==='不移行'?'selected':''}>不移行</option><option value="往後移團" ${cancelResVal==='往後移團'?'selected':''}>往後移團</option><option value="往前移團" ${cancelResVal==='往前移團'?'selected':''}>往前移團</option><option value="名義變更" ${cancelResVal==='名義變更'?'selected':''}>名義變更</option></select></td>`;
 
             html += `
                 <td style="border-left: 1px solid var(--border); text-align: center; vertical-align: middle; padding: 0 8px;"><input type="hidden" class="edit-roomGroup" value="${item.roomGroup || ''}">${roomCancelBtn}</td>
@@ -1743,12 +1762,12 @@
             
             let portMismatch = (bp !== defBoard || op !== defOff);
             if (portMismatch && seg === "全程") {
-                issues.push(`登離港異常 (${bp}/${op})，但區段被標記為 [全程]`);
+                issues.push({ col: '登離港', actual: `${bp}/${op}`, expected: `${defBoard}/${defOff}` });
             }
             
             if (seg === "全程") {
-                if (tips !== defTips) issues.push(`小費金額 (${tips}) 與系統全程預設值 (${defTips}) 不符`);
-                if (portFee !== defPortFee) issues.push(`港務費金額 (${portFee}) 與系統全程預設值 (${defPortFee}) 不符`);
+                if (tips !== defTips) issues.push({ col: '小費', actual: `小費 ${fmtNum(tips)}`, expected: `小費 ${fmtNum(defTips)}` });
+                if (portFee !== defPortFee) issues.push({ col: '港務費', actual: `港務費 ${fmtNum(portFee)}`, expected: `港務費 ${fmtNum(defPortFee)}` });
             }
             
             let promo = getVal(item, "當月優惠價");
@@ -1766,55 +1785,136 @@
                 else if (childVal === "7-12歲") { expectedSF = Math.round(expectedSF * (isSingle ? 0.1 : 0.2)); }
                 
                 if (sf !== expectedSF) {
-                    issues.push(`SF船費金額 (${sf}) 與價格字典及孩童邏輯計算之應收值 (${expectedSF}) 不符`);
+                    issues.push({ col: 'SF船費', actual: `SF船費 ${fmtNum(sf)}`, expected: `SF船費 ${fmtNum(expectedSF)}` });
                 }
             } else {
-                issues.push(`找不到對應的價格字典資料 (方案:${promo} / 房型代碼:${roomCode})`);
+                issues.push({ col: '價格方案', actual: `無對應方案`, expected: `應有對應方案` });
             }
             
             if (issues.length > 0) {
-                let raw = [...item.raw];
-                raw.push(issues.join("；")); 
-                errors.push({ no: item.no, name: item.name, issues: issues, raw: raw });
+                errors.push({ no: item.no, name: item.name, id: item.id, issues: issues });
             }
         });
         
         if (errors.length === 0) {
             customAlert("檢核完成，目前名單無任何異常項目！", "success");
         } else {
-            let html = `<div style="text-align:left; max-height:400px; overflow-y:auto; margin-bottom:15px; font-size:12px;">`;
-            errors.forEach(e => { html += `<div style="margin-bottom:10px; padding:10px; background:var(--sys-bg); border-left:3px solid var(--danger);"><strong>NO.${e.no} ${e.name}</strong><br><span style="color:var(--danger);">${e.issues.join('<br>')}</span></div>`; });
-            html += `</div>`;
+            // 建構大表寬度的表格UI
+            let html = `<div style="max-height:500px; overflow-y:auto; margin-bottom:15px; border:1px solid var(--border); border-radius:8px;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                    <thead style="position:sticky; top:0; background:var(--primary-light); color:var(--white); z-index:10;">
+                        <tr>
+                            <th style="padding:10px;">NO</th>
+                            <th style="padding:10px;">姓名</th>
+                            <th style="padding:10px;">ID</th>
+                            <th style="padding:10px;">錯誤</th>
+                            <th style="padding:10px;">正常</th>
+                            <th style="padding:10px; text-align:center;">排除異常</th>
+                            <th style="padding:10px; text-align:center;">列為問題</th>
+                            <th style="padding:10px;">說明</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            errors.forEach(e => { 
+                e.issues.forEach((issue, j) => {
+                    let issueId = `issue-${e.no}-${j}`;
+                    html += `<tr id="${issueId}" style="border-bottom:1px solid var(--border); transition:background-color 0.3s; background:var(--white);">
+                        <td style="padding:8px 10px; font-weight:600; color:var(--primary);">${e.no}</td>
+                        <td style="padding:8px 10px;">${e.name}</td>
+                        <td style="padding:8px 10px; color:var(--text-light);">${e.id||'--'}</td>
+                        <td style="padding:8px 10px; color:var(--danger); font-weight:600;">${issue.actual}</td>
+                        <td style="padding:8px 10px; color:var(--success); font-weight:600;">${issue.expected}</td>
+                        <td style="padding:8px 10px; text-align:center;">
+                            <button onclick="markIssueStatus('${issueId}', 'pass', '${e.no}', '${e.name}', '${issue.col}')" style="background:#065F46; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">✔️ 排除異常</button>
+                        </td>
+                        <td style="padding:8px 10px; text-align:center;">
+                            <button onclick="markIssueStatus('${issueId}', 'issue', '${e.no}', '${e.name}', '${issue.col}')" style="background:#9F1239; color:white; border:none; border-radius:4px; padding:6px 12px; font-size:11px; cursor:pointer; font-weight:600;">❌ 列為問題</button>
+                        </td>
+                        <td id="note-${issueId}" style="padding:8px 10px; color:var(--text-light); font-size:11px;"></td>
+                    </tr>`;
+                });
+            });
+            html += `</tbody></table></div>`;
             
             window._currentValidationErrors = errors; 
             
             document.getElementById('modal-title').innerText = '檢核結果：發現異常問題件';
             document.getElementById('modal-msg').innerHTML = html;
             
+            // 將 Modal 強制放寬對齊清單
+            document.querySelector('#custom-modal .modal-box').style.width = '90vw';
+            document.querySelector('#custom-modal .modal-box').style.maxWidth = '1400px';
+
             let btnCancel = document.getElementById('modal-btn-cancel'); 
             let btnConfirm = document.getElementById('modal-btn-confirm');
             btnCancel.style.display = 'block'; 
             btnCancel.innerText = '匯出異常清單 (EXCEL)';
             btnCancel.onclick = exportValidationErrors;
-            btnConfirm.innerText = '關閉';
+            btnConfirm.innerText = '關閉視窗';
             
             document.getElementById('custom-modal').classList.add('show');
         }
     }
 
+    // 更新各單筆檢核狀態並寫入Logs
+    window.markIssueStatus = function(issueId, status, no, name, col) {
+        let tr = document.getElementById(issueId);
+        let noteTd = document.getElementById(`note-${issueId}`);
+        let operator = document.getElementById('current-username').innerText;
+        let dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+        
+        let note = "";
+        let actionType = "";
+        if(status === 'pass') {
+            tr.style.backgroundColor = '#ECFDF5'; // 淡綠底色
+            note = `${operator}排除異常 ${dateStr}`;
+            actionType = '排除異常';
+        } else {
+            tr.style.backgroundColor = '#FEF2F2'; // 淡紅底色
+            note = `${operator}列為問題 ${dateStr}`;
+            actionType = '列為問題';
+        }
+        
+        noteTd.innerText = note;
+        
+        // 更新暫存資料結構以供匯出
+        let parts = issueId.split('-');
+        // 處理可能有 dash 的 no 例如 GRP-1
+        let trNo = parts.slice(1, parts.length-1).join('-'); 
+        let j = parseInt(parts[parts.length-1]);
+        let errObj = window._currentValidationErrors.find(e => e.no === trNo);
+        if(errObj && errObj.issues[j]) {
+            errObj.issues[j].status = status;
+            errObj.issues[j].note = note;
+        }
+
+        // 呼叫新 API，背景直接寫入 System Logs
+        let targetStr = `NO.${no} ${name} [${col}]`;
+        fetch(gasURL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'addCustomLog', operator: operator, target: targetStr, actionName: actionType, details: note })
+        }).then(() => { isLogsDirty = true; });
+    };
+
     function exportValidationErrors() {
         let errors = window._currentValidationErrors;
         if(!errors || errors.length === 0) return;
         
-        let exportData = [];
-        let headers = [...window.currentGroupHeaders, "檢核異常說明"];
-        exportData.push(headers);
+        // 匯出直觀的檢核大表，而非原始資料
+        let exportData = [["NO", "姓名", "ID", "錯誤數值", "正常數值", "處理狀態", "說明"]];
         
-        let bIdx = window.currentGroupHeaders.indexOf("生日");
         errors.forEach(e => {
-            let r = [...e.raw];
-            if(bIdx > -1) r[bIdx] = fmtDate(r[bIdx]);
-            exportData.push(r);
+            e.issues.forEach(issue => {
+                let statusStr = "未處理";
+                if(issue.status === 'pass') statusStr = "已排除";
+                else if (issue.status === 'issue') statusStr = "列為問題";
+                
+                exportData.push([
+                    e.no, e.name, e.id || '--',
+                    issue.actual, issue.expected,
+                    statusStr, issue.note || ''
+                ]);
+            });
         });
         
         let wb = XLSX.utils.book_new(); let ws = XLSX.utils.aoa_to_sheet(exportData);
@@ -1822,7 +1922,6 @@
         let groupCode = document.getElementById('search-groupCode').value || "未知";
         let dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '.');
         XLSX.writeFile(wb, `(${groupCode}) 異常檢核清單 (${dateStr}).xlsx`);
-        closeModal(false);
     }
 
     function exportExcel() {
