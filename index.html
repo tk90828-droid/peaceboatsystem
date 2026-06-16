@@ -896,6 +896,26 @@
         let isSingle = fullRoomType.includes("(單人)");
         let isDouble = fullRoomType.includes("(雙人)");
 
+        const subASelect = block.querySelector('.h-subA');
+        const subBSelect = block.querySelector('.h-subB');
+        if (subASelect && subASelect.tagName === 'SELECT' && subBSelect && subBSelect.tagName === 'SELECT') {
+            let curA = subASelect.value;
+            let curB = subBSelect.value;
+            let optA = ['0'];
+            let optB = ['0'];
+            if (fullRoomType.includes("G3")) {
+                optA = ['0', '44000'];
+                optB = ['0', '22000'];
+            } else if (fullRoomType.includes("F4")) {
+                optA = ['0'];
+                optB = ['0', '44000'];
+            }
+            subASelect.innerHTML = optA.map(v => `<option value="${v}">${v==='0'?'0':fmtNum(v)}</option>`).join('');
+            subBSelect.innerHTML = optB.map(v => `<option value="${v}">${v==='0'?'0':fmtNum(v)}</option>`).join('');
+            subASelect.value = optA.includes(curA) ? curA : '0';
+            subBSelect.value = optB.includes(curB) ? curB : '0';
+        }
+
         if (childRemark === "7-12歲" && !isSingle && !isDouble && fullRoomType !== "") {
             customAlert("7-12歲孩童計價僅適用於「(雙人)」或「(單人)」房型！請重新確認房型。", "warning");
             if (childRemarkSelect) childRemarkSelect.value = "";
@@ -1044,8 +1064,8 @@
                     <div class="input-group"><label style="color:var(--danger);">AGT D (填正數) </label><input type="text" class="h-agtd" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                 </div>
                 <div class="grid-5" style="margin-bottom: 15px;">
-                    <div class="input-group"><label>下鋪A</label><input type="text" class="h-subA" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
-                    <div class="input-group"><label>下鋪B</label><input type="text" class="h-subB" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
+                    <div class="input-group"><label>下鋪A</label><select class="h-subA" onchange="autoCalcPrice(${num})"><option value="0">0</option></select></div>
+                    <div class="input-group"><label>下鋪B</label><select class="h-subB" onchange="autoCalcPrice(${num})"><option value="0">0</option></select></div>
                     <div class="input-group"><label>免治馬桶</label><input type="text" class="h-toilet" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>國際旅客稅</label><input type="text" class="h-intlTax" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
                     <div class="input-group"><label>阿拉斯加稅</label><input type="text" class="h-alaskaTax" value="0" oninput="autoCalcPrice(${num})" onfocus="unformatNum(this)" onblur="formatNumInput(this); autoCalcPrice(${num})"></div>
