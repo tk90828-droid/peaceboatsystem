@@ -1,3 +1,11 @@
+    function currentUser() { return document.getElementById('current-username').innerText; }
+
+    // 統一封裝 POST 請求樣板，回傳值與原本的 fetch(...) 完全相同（一個 Promise<Response>），
+    // 所以呼叫端原有的 .then(res => res.json()) 或 await fetch(...) 寫法都不需要更動。
+    function gasPost(action, payload = {}) {
+        return fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: action, ...payload }) });
+    }
+
     function pNum(val) {
         if (val === undefined || val === null || val === '') return 0;
         return Number(String(val).replace(/,/g, '')) || 0;
@@ -657,58 +665,30 @@
             if(compiledData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
             
             showLoading("PROCESSING DATA...");
-            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'addOrder', data: compiledData, operatorAccount: operatorAccount }) })
+            gasPost('addOrder', { data: compiledData, operatorAccount: operatorAccount })
             .then(res => res.json())
             .then(res => {
                 hideLoading(); 
                 if(res.status === 'success'){ 
                     isLogsDirty = true; 
+                    customAlert("已新增訂單", "success");
+                    document.getElementById('orderForm').reset();
+                    document.getElementById('passengers-wrapper').innerHTML = ''; 
+                    document.getElementById('global-groupCode').value = ''; 
+                    document.getElementById('step-2-container').style.opacity = '0'; 
+                    setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); 
+                    passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); 
                     
-                    // 強制前端自行發送完整的數值 Log
-                    let detailsText = compiledData.map(p => {
-                        return `[新增完整明細] 姓名: ${p.name} (ID: ${p.id||'--'})\n` +
-                               `  • 房型: ${p.roomType || '(空)'}\n` +
-                               `  • 登船/離船: ${p.boardPort || '(空)'} / ${p.offPort || '(空)'}\n` +
-                               `  • 當月優惠價: ${p.promotion || '(空)'}\n` +
-                               `  • 優惠特典: ${p.promoExtras || '(空)'}\n` +
-                               `  • SF船費: ${fmtNum(p.sf)}\n` +
-                               `  • 港務費: ${fmtNum(p.portFee)}\n` +
-                               `  • 小費: ${fmtNum(p.tips)}\n` +
-                               `  • 基本旅費總價: ${fmtNum(p.totalDirect)}\n` +
-                               `  • 佣金%: ${p.commRateStr}\n` +
-                               `  • 佣金: ${fmtNum(p.commission)}\n` +
-                               `  • SET應付: ${fmtNum(p.setPay)}`;
-                    }).join('\n\n');
-                    
-                    fetch(gasURL, {
-                        method: 'POST',
-                        body: JSON.stringify({ 
-                            action: 'addCustomLog', 
-                            operator: operatorAccount, 
-                            target: '航程 ' + groupCode, 
-                            actionName: '建立新訂單', 
-                            details: detailsText 
-                        })
-                    }).then(() => {
-                        customAlert("已新增訂單", "success");
-                        document.getElementById('orderForm').reset();
-                        document.getElementById('passengers-wrapper').innerHTML = ''; 
-                        document.getElementById('global-groupCode').value = ''; 
-                        document.getElementById('step-2-container').style.opacity = '0'; 
-                        setTimeout(() => document.getElementById('step-2-container').style.display = 'none', 400); 
-                        passengerCount = 0; blockCounter = 0; window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                        
-                        const t = new Date().getTime(); 
-                        fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { 
-                            if(r.status === 'success') { 
-                                const datalist = document.getElementById('groupOptions'); 
-                                datalist.innerHTML = ""; 
-                                r.data.forEach(group => { 
-                                    const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); 
-                                }); 
-                            } 
-                        }); 
-                    });
+                    const t = new Date().getTime(); 
+                    fetch(gasURL + "?action=getGroupList&t=" + t).then(r => r.json()).then(r => { 
+                        if(r.status === 'success') { 
+                            const datalist = document.getElementById('groupOptions'); 
+                            datalist.innerHTML = ""; 
+                            r.data.forEach(group => { 
+                                const opt = document.createElement('option'); opt.value = group; datalist.appendChild(opt); 
+                            }); 
+                        } 
+                    }); 
                 } else { 
                     customAlert("寫入失敗：" + res.message, "error"); 
                 }
@@ -1371,35 +1351,15 @@
         const executeBatchUpdate = async () => {
             showLoading("UPDATING...");
             try {
-                let res = await fetch(gasURL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ 
-                        action: 'batchUpdateRows', 
-                        updates: updates, 
-                        changesLog: changesLog, 
-                        operator: document.getElementById('current-username').innerText 
-                    }) 
+                let res = await gasPost('batchUpdateRows', {
+                    updates: updates,
+                    changesLog: changesLog,
+                    operator: currentUser()
                 });
                 let json = await res.json();
                 
                 if(json.status === 'success') { 
                     isLogsDirty = true; 
-                    
-                    // 強制前端自行發送完整的數值 Log，避開後端攔截覆蓋！
-                    if (changesLog.length > 0) {
-                        let customLogText = changesLog.join('\n\n');
-                        await fetch(gasURL, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: 'addCustomLog',
-                                operator: document.getElementById('current-username').innerText,
-                                target: '航程 ' + document.getElementById('search-groupCode').value,
-                                actionName: '更新資料',
-                                details: customLogText
-                            })
-                        });
-                    }
-
                     hideLoading();
                     customAlert(`整批寫入成功！`, "success"); 
                     searchList(); 
@@ -1613,10 +1573,8 @@
         }
 
         let targetStr = `NO.${no} ${name} [${col}]`;
-        fetch(gasURL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'addCustomLog', operator: operator, target: targetStr, actionName: actionType, details: note })
-        }).then(() => { isLogsDirty = true; });
+        gasPost('addCustomLog', { operator: operator, target: targetStr, actionName: actionType, details: note })
+        .then(() => { isLogsDirty = true; });
     };
 
     function exportValidationErrors() {
@@ -1787,7 +1745,7 @@
                 if (isDecrease) {
                     customConfirm("同房人數減少，系統將自動解除該房所有旅客的同房關係！", () => {
                         showLoading("SAVING CONFIG...");
-                        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'updateTags', type: managerType, oldTagId: currentManagerOldTag, newTagId: "", selectedNOs: [], voyage: document.getElementById('search-groupCode').value, operator: document.getElementById('current-username').innerText, memberDetails: "因同房人數減少，已自動解除所有人的同房關係" }) })
+                        gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: "", selectedNOs: [], voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: "因同房人數減少，已自動解除所有人的同房關係" })
                         .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
                     }, true);
                     return; 
@@ -1816,7 +1774,7 @@
 
         let executeAction = () => {
             showLoading("SAVING CONFIG...");
-            fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'updateTags', type: managerType, oldTagId: currentManagerOldTag, newTagId: newTagId, selectedNOs: selectedNOs, leaderNo: managerLeaderNo, voyage: document.getElementById('search-groupCode').value, operator: document.getElementById('current-username').innerText, memberDetails: memberDetails }) })
+            gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: newTagId, selectedNOs: selectedNOs, leaderNo: managerLeaderNo, voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: memberDetails })
             .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
         };
         
@@ -1840,11 +1798,11 @@
         if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
         
         showLoading("PROCESSING...");
-        fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'cancelOrder', no: cancelTargetNo, operator: document.getElementById('current-username').innerText, reason: reason, result: resVal, amount: pNum(amt), remark: remark }) })
+        gasPost('cancelOrder', { no: cancelTargetNo, operator: currentUser(), reason: reason, result: resVal, amount: pNum(amt), remark: remark })
         .then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } else customAlert("取消失敗：" + res.message, "error"); });
     }
 
-    function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: 'restoreOrder', no: no, operator: document.getElementById('current-username').innerText }) }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
+    function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); gasPost('restoreOrder', { no: no, operator: currentUser() }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
 
     // 帳款查詢系統功能實作
     function parseDateSafely(dStr) {
