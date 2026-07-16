@@ -6,6 +6,16 @@
         return fetch(gasURL, { method: 'POST', body: JSON.stringify({ action: action, ...payload }) });
     }
 
+    // 在目前的航程搜尋結果下，靜默重新抓取名單並重繪（不開關 loading，交由呼叫端自行控制）
+    function refreshCurrentList() {
+        const groupCode = document.getElementById('search-groupCode').value;
+        if (!groupCode) return Promise.resolve();
+        return fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + Date.now())
+            .then(res => res.json())
+            .then(res => { if (res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } })
+            .catch(() => {});
+    }
+
     function pNum(val) {
         if (val === undefined || val === null || val === '') return 0;
         return Number(String(val).replace(/,/g, '')) || 0;
@@ -205,7 +215,7 @@
         }
     }
 
-    function showLoading(text = 'PROCESSING...') { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
+    function showLoading(text = 'LOADING...') { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
     function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
     function showTagTooltip(e, contentHTML) { let tt = document.getElementById('global-tooltip'); tt.innerHTML = contentHTML; tt.style.display = 'block';
         tt.style.left = (e.clientX + 15) + 'px'; tt.style.top = (e.clientY + 15) + 'px';
@@ -664,7 +674,7 @@
 
             if(compiledData.length === 0) { customAlert("沒有可送出的旅客資料！", "warning"); return; }
             
-            showLoading("PROCESSING DATA...");
+            showLoading();
             gasPost('addOrder', { data: compiledData, operatorAccount: operatorAccount })
             .then(res => res.json())
             .then(res => {
@@ -710,7 +720,7 @@
                 } else { 
                     customAlert("寫入失敗：" + res.message, "error"); 
                 }
-            }).catch(err => { hideLoading(); customAlert("NETWORK ERROR", "error"); });
+            }).catch(err => { hideLoading(); customAlert("網路連線異常，請稍後再試", "error"); });
         };
 
         if (hasPortMismatch) {
@@ -728,9 +738,9 @@
 
     function searchList() {
         const groupCode = document.getElementById('search-groupCode').value;
-        if(!groupCode) { customAlert("請先輸入或選擇欲搜尋的航程代碼", "warning"); return; } showLoading("FETCHING...");
+        if(!groupCode) { customAlert("請先輸入或選擇欲搜尋的航程代碼", "warning"); return; } showLoading();
         const t = new Date().getTime();
-        fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("NETWORK ERROR", "error"); });
+        fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(groupCode) + "&t=" + t).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { window.currentGroupData = res.data; window.currentGroupHeaders = res.headers; renderList(); } }).catch(err => { hideLoading(); customAlert("網路連線異常，請稍後再試", "error"); });
     }
 
     function sortByNoOnly() {
@@ -1367,7 +1377,7 @@
         document.querySelector('#custom-modal .modal-box').style.maxWidth = '95vw';
 
         const executeBatchUpdate = async () => {
-            showLoading("UPDATING...");
+            showLoading();
             try {
                 let res = await gasPost('batchUpdateRows', {
                     updates: updates,
@@ -1378,9 +1388,9 @@
                 
                 if(json.status === 'success') { 
                     isLogsDirty = true; 
+                    await refreshCurrentList();
                     hideLoading();
                     customAlert(`整批寫入成功！`, "success"); 
-                    searchList(); 
                 } else { 
                     hideLoading();
                     customAlert("更新失敗：" + json.message, "error"); 
@@ -1397,7 +1407,7 @@
     async function runValidation() {
         if(!window.currentGroupData || window.currentGroupData.length === 0) return customAlert("請先搜尋航程名單！", "warning");
         
-        showLoading("檢核中，同步歷史排除紀錄...");
+        showLoading();
         
         let groupCode = document.getElementById('search-groupCode').value;
         let defs = window.voyageDefaults[groupCode] || {};
@@ -1761,10 +1771,12 @@
                 if (currentManagerOldTag !== "") { for(let o of originalMembers) { if(!selectedNOs.includes(o)) { isDecrease = true; break; } } }
 
                 if (isDecrease) {
-                    customConfirm("同房人數減少，系統將自動解除該房所有旅客的同房關係！", () => {
-                        showLoading("SAVING CONFIG...");
-                        gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: "", selectedNOs: [], voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: "因同房人數減少，已自動解除所有人的同房關係" })
-                        .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
+                    customConfirm("同房人數減少，系統將自動解除該房所有旅客的同房關係！", async () => {
+                        showLoading();
+                        await gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: "", selectedNOs: [], voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: "因同房人數減少，已自動解除所有人的同房關係" }).then(r=>r.json());
+                        closeManagerModal();
+                        await refreshCurrentList();
+                        hideLoading();
                     }, true);
                     return; 
                 }
@@ -1790,10 +1802,12 @@
             if(leader) memberDetails += `\n\n👑 指定群主: NO.${leader.no} ${leader.name}`;
         }
 
-        let executeAction = () => {
-            showLoading("SAVING CONFIG...");
-            gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: newTagId, selectedNOs: selectedNOs, leaderNo: managerLeaderNo, voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: memberDetails })
-            .then(r=>r.json()).then(res=>{ hideLoading(); closeManagerModal(); searchList(); });
+        let executeAction = async () => {
+            showLoading();
+            await gasPost('updateTags', { type: managerType, oldTagId: currentManagerOldTag, newTagId: newTagId, selectedNOs: selectedNOs, leaderNo: managerLeaderNo, voyage: document.getElementById('search-groupCode').value, operator: currentUser(), memberDetails: memberDetails }).then(r=>r.json());
+            closeManagerModal();
+            await refreshCurrentList();
+            hideLoading();
         };
         
         if (hasConflict) customConfirm("選擇的名單中，有人已經具備其他的同房代號。\n確定要覆蓋並修改為新的同房代號嗎？", executeAction, true);
@@ -1815,12 +1829,21 @@
         if(!reason || !resVal) return customAlert("【取消理由】與【取消結果】皆為必填！", "warning");
         if(resVal === '名義變更' && !amt) return customAlert("選擇【名義變更】時，請務必輸入變更金額！", "warning");
         
-        showLoading("PROCESSING...");
+        showLoading();
         gasPost('cancelOrder', { no: cancelTargetNo, operator: currentUser(), reason: reason, result: resVal, amount: pNum(amt), remark: remark })
-        .then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; closeCancelModal(); searchList(); } else customAlert("取消失敗：" + res.message, "error"); });
+        .then(res => res.json()).then(async res => {
+            if(res.status === 'success') {
+                isLogsDirty = true; closeCancelModal();
+                await refreshCurrentList();
+                hideLoading();
+            } else {
+                hideLoading();
+                customAlert("取消失敗：" + res.message, "error");
+            }
+        });
     }
 
-    function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading("PROCESSING..."); gasPost('restoreOrder', { no: no, operator: currentUser() }).then(res => res.json()).then(res => { hideLoading(); if(res.status === 'success') { isLogsDirty = true; searchList(); } }); }); }
+    function restoreOrder(no) { customConfirm(`確定要復原 NO.${no} 的訂單嗎？`, () => { showLoading(); gasPost('restoreOrder', { no: no, operator: currentUser() }).then(res => res.json()).then(async res => { if(res.status === 'success') { isLogsDirty = true; await refreshCurrentList(); } hideLoading(); }); }); }
 
     // 帳款查詢系統功能實作
     function parseDateSafely(dStr) {
@@ -1851,7 +1874,7 @@
         let sTime = new Date(sDate + " 00:00:00").getTime();
         let eTime = new Date(eDate + " 23:59:59").getTime();
 
-        showLoading("PROCESSING DATA...");
+        showLoading();
         accReportData = {};
         accAllPossibleCols = new Set();
 
@@ -1906,7 +1929,7 @@
     async function fetchAccAddVoyage() {
         let g = document.getElementById('acc-add-voyage').value.trim();
         if(!g) return customAlert("請先輸入航程代碼", "warning");
-        showLoading("FETCHING...");
+        showLoading();
         try {
             let res = await fetch(gasURL + "?action=searchOrders&groupCode=" + encodeURIComponent(g) + "&t=" + Date.now());
             let json = await res.json();
@@ -1922,7 +1945,7 @@
             }
         } catch(e) {
             hideLoading();
-            customAlert("NETWORK ERROR", "error");
+            customAlert("網路連線異常，請稍後再試", "error");
         }
     }
 
@@ -2356,7 +2379,7 @@
 
     function loadLogs(forceRefresh = false) {
         if (!forceRefresh && !isLogsDirty && cachedLogs) { renderLogsUI(cachedLogs); return; }
-        document.getElementById('logs-view-container').innerHTML = '<div style="text-align:center; padding:80px; font-weight:600; letter-spacing:0.2em; color:var(--primary);">FETCHING...</div>';
+        document.getElementById('logs-view-container').innerHTML = '<div style="text-align:center; padding:80px; font-weight:600; letter-spacing:0.2em; color:var(--primary);">LOADING...</div>';
         fetch(gasURL + "?action=getLogs&t=" + new Date().getTime()).then(res => res.json()).then(res => { 
             if(res.status === 'success') { 
                 cachedLogs = res.data; 
