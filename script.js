@@ -671,6 +671,24 @@
                 hideLoading(); 
                 if(res.status === 'success'){ 
                     isLogsDirty = true; 
+
+                    // 補送詳細的新增紀錄（不等待此請求完成，避免拖慢/延遲畫面反應）
+                    let detailsText = compiledData.map(p => {
+                        return `[新增完整明細] 姓名: ${p.name} (ID: ${p.id||'--'})\n` +
+                               `  • 房型: ${p.roomType || '(空)'}\n` +
+                               `  • 登船/離船: ${p.boardPort || '(空)'} / ${p.offPort || '(空)'}\n` +
+                               `  • 當月優惠價: ${p.promotion || '(空)'}\n` +
+                               `  • 優惠特典: ${p.promoExtras || '(空)'}\n` +
+                               `  • SF船費: ${fmtNum(p.sf)}\n` +
+                               `  • 港務費: ${fmtNum(p.portFee)}\n` +
+                               `  • 小費: ${fmtNum(p.tips)}\n` +
+                               `  • 基本旅費總價: ${fmtNum(p.totalDirect)}\n` +
+                               `  • 佣金%: ${p.commRateStr}\n` +
+                               `  • 佣金: ${fmtNum(p.commission)}\n` +
+                               `  • SET應付: ${fmtNum(p.setPay)}`;
+                    }).join('\n\n');
+                    gasPost('addCustomLog', { operator: operatorAccount, target: '航程 ' + groupCode, actionName: '建立新訂單', details: detailsText });
+
                     customAlert("已新增訂單", "success");
                     document.getElementById('orderForm').reset();
                     document.getElementById('passengers-wrapper').innerHTML = ''; 
